@@ -29,7 +29,7 @@ Vault Obsidian : ouvrir ce dossier directement comme vault (plugin **Obsidian Gi
 ## Suivi de progression — Git
 
 - [x] Zone de staging (add / commit / diff / status)
-- [ ] Branches : create, switch, merge
+- [x] Branches : create, switch, merge
 - [ ] Remotes : clone, push, pull, fetch
 - [ ] Résolution de conflits
 - [ ] Rebase vs merge
