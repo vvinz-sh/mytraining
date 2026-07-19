@@ -72,8 +72,9 @@ fois" au profit de juste "quels types de cause existent".
 précisément parce que la tâche a besoin d'exhaustivité et que ça rentre —
 les deux conditions comptent, pas juste la taille.
 
+![image](rsc/fig1.png)
 
-![[fig1.png]]
+
 ## Points à retenir de cette session
 
 1. "S'arrête et attend validation" ≠ agent, même avec de l'automatisation
