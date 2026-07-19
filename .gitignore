@@ -1,2 +1,2 @@
 .obsidian/
-ia-concepts/exercices/tp-ansible-llm/vault.yml
+ia-concepts/exercices/tp-ansible-llm/group_vars/all/vault.yml
