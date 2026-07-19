@@ -29,7 +29,7 @@ Vault Obsidian : ouvrir ce dossier directement comme vault (plugin **Obsidian Gi
 ## Suivi de progression — Git
 
 - [x] Zone de staging (add / commit / diff / status)
-- [x] Branches : create, switch, merge
+- [ ] Branches : create, switch, merge
 - [ ] Remotes : clone, push, pull, fetch
 - [ ] Résolution de conflits
 - [ ] Rebase vs merge
@@ -56,6 +56,7 @@ Vault Obsidian : ouvrir ce dossier directement comme vault (plugin **Obsidian Gi
 - [x] Réseaux de neurones — intuition (poids, activation, entraînement)
 - [x] Prompting — bonnes pratiques, few-shot, limites
 - [x] Usage pratique — appeler une API LLM depuis un script (Python/bash)
-- [x] RAG / fine-tuning — approfondissement (quand utiliser quoi)
-- [ ] Limites et biais — hallucinations, sur-confiance, quand ne pas faire confiance au modèle
-- [ ] TP prévus - voir exercices/
+- [x] RAG / fine-tuning — critères de décision (fréquence, nature, volume/coût)
+- [x] Limites et biais — hallucinations, sur-confiance
+
+**Module IA de base terminé.** TP prévu à faire quand une clé API sera disponible : `ia-concepts/exercices/tp-ansible-llm.md`.
