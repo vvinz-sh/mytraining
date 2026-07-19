@@ -1,7 +1,7 @@
 # Git — Les trois zones (commit / index / working directory)
 
-Statut : **acquis** pour le concept de staging. À voir ensuite : branches,
-remotes, résolution de conflits, rebase.
+Statut : **acquis** pour le concept de staging. À voir ensuite : remotes,
+résolution de conflits, rebase (branches vues dans `02_branches.md`).
 
 ## Le schéma à trois états
 
@@ -40,7 +40,6 @@ config.yml`, puis je modifie `config.yml` une 2ème fois sans re-`add`.
 
 ## À venir
 
-- [ ] Branches : create, switch, merge
 - [ ] Remotes : clone, push, pull, fetch
 - [ ] Résolution de conflits
 - [ ] Rebase vs merge
