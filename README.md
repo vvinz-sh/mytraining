@@ -53,7 +53,7 @@ Vault Obsidian : ouvrir ce dossier directement comme vault (plugin **Obsidian Gi
 
 - [x] Terminologie : LLM, tokens, prompt/system prompt, tool use, agents, MCP, RAG, embeddings, fine-tuning
 - [x] Qu'est-ce que le Machine Learning (vs programmation classique)
-- [ ] Réseaux de neurones — intuition (poids, activation, entraînement)
+- [x] Réseaux de neurones — intuition (poids, activation, entraînement)
 - [ ] Prompting — bonnes pratiques, few-shot, limites
 - [ ] Usage pratique — appeler une API LLM depuis un script (Python/bash)
 - [ ] RAG / fine-tuning — approfondissement (quand utiliser quoi)
