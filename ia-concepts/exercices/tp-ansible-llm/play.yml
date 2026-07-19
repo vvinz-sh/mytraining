@@ -1,0 +1,44 @@
+---
+- name: Récupérer le log depuis la target
+  hosts: target
+  tasks:
+    - name: Lire le contenu du fichier de log
+      slurp:
+        src: /var/log/messages-short
+      register: log_raw
+
+    - name: Décoder le contenu en base64 -> texte
+      set_fact:
+        log_content: "{{ log_raw.content | b64decode }}"
+
+- name:  Appeler l'API LLM depuis le control node
+  hosts: localhost
+  tasks:
+    - name: Générer un résumé de log via l'API LLM
+      uri:
+        url: "{{ llm_api_url }}"
+        method: POST
+        headers:
+          x-api-key: "{{ llm_api_key }}"
+          anthropic-version: "2023-06-01"
+          content-type: application/json
+        body_format: json
+        body:
+          model: "{{ llm_model }}"
+          max_tokens: "{{ llm_max_tokens }}"
+          messages:
+            - role: user
+              content: "Résume ce log en 3 points : {{ hostvars['rh8102']['log_content'] }}"
+        status_code: 200
+        return_content: yes
+      register: llm_response
+      no_log: true
+    
+    - name: Vérifier que la réponse n'a pas été tronquée
+      fail:
+        msg: "Réponse tronquée par max_tokens"
+      when: llm_response.json.stop_reason == "max_tokens"
+
+    - name: Afficher le résumé généré
+      debug:
+        msg: "{{ llm_response.json.content[0].text }}"
