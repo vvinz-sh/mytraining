@@ -55,6 +55,6 @@ Vault Obsidian : ouvrir ce dossier directement comme vault (plugin **Obsidian Gi
 - [x] Qu'est-ce que le Machine Learning (vs programmation classique)
 - [x] Réseaux de neurones — intuition (poids, activation, entraînement)
 - [x] Prompting — bonnes pratiques, few-shot, limites
-- [ ] Usage pratique — appeler une API LLM depuis un script (Python/bash)
+- [x] Usage pratique — appeler une API LLM depuis un script (Python/bash)
 - [ ] RAG / fine-tuning — approfondissement (quand utiliser quoi)
 - [ ] Limites et biais — hallucinations, sur-confiance, quand ne pas faire confiance au modèle
