@@ -71,11 +71,13 @@ TP prévu à faire quand une clé API sera disponible : `ia-concepts/exercices/t
 - [ ] Guardrails et garde-fous en production
 - [ ] Coûts et facturation (tokens → €, input vs output)
 
-**Hardware — pourquoi l'IA est si gourmande**
-- [ ] Pourquoi l'entraînement/inférence dévore de la RAM/VRAM (taille des poids, précision numérique FP16/INT8...)
-- [ ] Rôle du GPU vs CPU (pourquoi le calcul matriciel massif favorise le GPU)
-- [ ] VRAM comme goulot d'étranglement (pourquoi le nombre de paramètres dicte le matériel nécessaire)
-- [ ] Quantization (réduire la conso mémoire en sacrifiant un peu de précision)
+**Hardware — pourquoi l'IA est si gourmande** — terminé ✅
+- [x] Pourquoi l'entraînement/inférence dévore de la RAM/VRAM (taille des poids, précision numérique FP16/INT8, quantization)
+- [x] Rôle du GPU vs CPU (parallélisme massif, multiplication de matrices)
+- [x] CUDA vs Tensor Cores (logiciel vs matériel spécialisé)
+- [x] Entraînement vs inférence (facteur ×4-6 : gradients, états d'optimiseur, activations)
+- [x] Fine-tuning partiel — LoRA / QLoRA (rang intrinsèque faible, combinaison avec la quantization)
+- [x] Panorama des LLM actuels (propriétaires vs open-weight, critères de choix, routing multi-modèles)
 
 **Outils de l'écosystème**
 - [ ] Frameworks d'orchestration (LangChain, LlamaIndex)
@@ -83,3 +85,6 @@ TP prévu à faire quand une clé API sera disponible : `ia-concepts/exercices/t
 - [ ] Outils no-code/low-code avec IA (n8n, Zapier)
 - [ ] Assistants de code (Claude Code, Copilot)
 - [ ] Serveurs MCP existants (panorama de ce qui existe déjà)
+
+**TP en préparation**
+- [ ] LLM local de bout en bout — Ollama (inférence) puis Unsloth/QLoRA (fine-tuning) sur RTX 3070 8 Go, WSL2 — design posé dans `ia-concepts/exercices/tp-llm-local-ollama-qlora-draft.md`, pas encore exécuté
