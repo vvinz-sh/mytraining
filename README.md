@@ -1,6 +1,7 @@
 # mytraining
 
 Repo de formation personnelle — notes, exercices et suivi de progression.
+
 Vault Obsidian : ouvrir ce dossier directement comme vault (plugin **Obsidian Git** recommandé pour committer les notes automatiquement).
 
 ## Technos suivies
