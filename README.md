@@ -11,7 +11,7 @@ Vault Obsidian : ouvrir ce dossier directement comme vault (plugin **Obsidian Gi
 | Ansible | Intermédiaire — rôles, Vault, structure de projet | notes/ + roles/ |
 | Git | Débutant | notes/ |
 | Logstash | Débutant | notes/ + pipelines/ |
-| IA (concepts + pratique) | Débutant total | notes/ + exercices/ |
+| IA (concepts + pratique) | Débutant total → vague 2 en cours | notes/ + exercices/ |
 
 ## Suivi de progression — RHCSA (EX200)
 
@@ -49,7 +49,7 @@ Vault Obsidian : ouvrir ce dossier directement comme vault (plugin **Obsidian Gi
 - [ ] Idempotence et handlers
 - [ ] Tags et includes
 
-## Suivi de progression — IA (concepts + pratique)
+## Suivi de progression — IA, vague 1 (base) — terminée ✅
 
 - [x] Terminologie : LLM, tokens, prompt/system prompt, tool use, agents, MCP, RAG, embeddings, fine-tuning
 - [x] Qu'est-ce que le Machine Learning (vs programmation classique)
@@ -59,4 +59,26 @@ Vault Obsidian : ouvrir ce dossier directement comme vault (plugin **Obsidian Gi
 - [x] RAG / fine-tuning — critères de décision (fréquence, nature, volume/coût)
 - [x] Limites et biais — hallucinations, sur-confiance
 
-**Module IA de base terminé.** TP prévu à faire quand une clé API sera disponible : `ia-concepts/exercices/tp-ansible-llm.md`.
+TP prévu à faire quand une clé API sera disponible : `ia-concepts/exercices/tp-ansible-llm.md`.
+
+## Suivi de progression — IA, vague 2 (approfondissement)
+
+**Paramètres et fonctionnement pratique**
+- [ ] Fenêtre de contexte en pratique (résumé progressif, compression, gestion d'historique long)
+- [ ] Paramètres de génération (`temperature`, `top_p`/`top_k`)
+- [ ] Multimodalité (image/PDF au-delà du texte)
+- [ ] Guardrails et garde-fous en production
+- [ ] Coûts et facturation (tokens → €, input vs output)
+
+**Hardware — pourquoi l'IA est si gourmande**
+- [ ] Pourquoi l'entraînement/inférence dévore de la RAM/VRAM (taille des poids, précision numérique FP16/INT8...)
+- [ ] Rôle du GPU vs CPU (pourquoi le calcul matriciel massif favorise le GPU)
+- [ ] VRAM comme goulot d'étranglement (pourquoi le nombre de paramètres dicte le matériel nécessaire)
+- [ ] Quantization (réduire la conso mémoire en sacrifiant un peu de précision)
+
+**Outils de l'écosystème**
+- [ ] Frameworks d'orchestration (LangChain, LlamaIndex)
+- [ ] Bases de données vectorielles (Pinecone, Chroma, Weaviate, pgvector)
+- [ ] Outils no-code/low-code avec IA (n8n, Zapier)
+- [ ] Assistants de code (Claude Code, Copilot)
+- [ ] Serveurs MCP existants (panorama de ce qui existe déjà)
