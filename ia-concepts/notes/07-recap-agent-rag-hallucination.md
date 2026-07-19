@@ -74,6 +74,8 @@ les deux conditions comptent, pas juste la taille.
 
 ![image](rsc/fig1.png)
 
+Ce schéma reprend les étapes qu'on a vues : deux entrées en parallèle (documents et question), toutes deux vectorisées puis comparées (embedding + recherche par similarité), le résultat récupéré est injecté avec la question dans le LLM qui génère la réponse final
+
 
 ## Points à retenir de cette session
 
