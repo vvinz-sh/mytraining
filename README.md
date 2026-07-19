@@ -11,6 +11,7 @@ Vault Obsidian : ouvrir ce dossier directement comme vault (plugin **Obsidian Gi
 | Ansible | Intermédiaire — rôles, Vault, structure de projet | notes/ + roles/ |
 | Git | Débutant | notes/ |
 | Logstash | Débutant | notes/ + pipelines/ |
+| IA (concepts + pratique) | Débutant total | notes/ + exercices/ |
 
 ## Suivi de progression — RHCSA (EX200)
 
@@ -47,3 +48,13 @@ Vault Obsidian : ouvrir ce dossier directement comme vault (plugin **Obsidian Gi
 - [ ] Ansible Vault
 - [ ] Idempotence et handlers
 - [ ] Tags et includes
+
+## Suivi de progression — IA (concepts + pratique)
+
+- [x] Terminologie : LLM, tokens, prompt/system prompt, tool use, agents, MCP, RAG, embeddings, fine-tuning
+- [ ] Qu'est-ce que le Machine Learning (vs programmation classique)
+- [ ] Réseaux de neurones — intuition (poids, activation, entraînement)
+- [ ] Prompting — bonnes pratiques, few-shot, limites
+- [ ] Usage pratique — appeler une API LLM depuis un script (Python/bash)
+- [ ] RAG / fine-tuning — approfondissement (quand utiliser quoi)
+- [ ] Limites et biais — hallucinations, sur-confiance, quand ne pas faire confiance au modèle
