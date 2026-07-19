@@ -52,7 +52,7 @@ Vault Obsidian : ouvrir ce dossier directement comme vault (plugin **Obsidian Gi
 ## Suivi de progression — IA (concepts + pratique)
 
 - [x] Terminologie : LLM, tokens, prompt/system prompt, tool use, agents, MCP, RAG, embeddings, fine-tuning
-- [ ] Qu'est-ce que le Machine Learning (vs programmation classique)
+- [x] Qu'est-ce que le Machine Learning (vs programmation classique)
 - [ ] Réseaux de neurones — intuition (poids, activation, entraînement)
 - [ ] Prompting — bonnes pratiques, few-shot, limites
 - [ ] Usage pratique — appeler une API LLM depuis un script (Python/bash)
