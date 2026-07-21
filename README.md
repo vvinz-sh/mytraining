@@ -69,8 +69,8 @@ TP réalisé avec succès : `ia-concepts/exercices/tp-ansible-llm-resultat.md`.
 - [x] Fenêtre de contexte en pratique (résumé progressif, compression, gestion d'historique long)
 - [x] Paramètres de génération (`temperature`, `top_p`/`top_k`) — `ia-concepts/notes/16-...md`, `18-top-k-top-p.md`
 - [x] Multimodalité (image/PDF au-delà du texte) — `ia-concepts/notes/19-multimodalite-patches-positional-embedding.md`
-- [ ] Guardrails et garde-fous en production
-- [ ] Coûts et facturation (tokens → €, input vs output)
+- [x] Guardrails et garde-fous en production
+- [x] Coûts et facturation (tokens → €, input vs output)
 
 **Hardware — pourquoi l'IA est si gourmande** — terminé ✅
 - [x] Pourquoi l'entraînement/inférence dévore de la RAM/VRAM (taille des poids, précision numérique FP16/INT8, quantization)
