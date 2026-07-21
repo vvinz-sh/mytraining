@@ -71,6 +71,79 @@ Parallèle direct avec les couches de neurones : chaque couche/étape
 résout un problème plus simple et isolé, plutôt qu'une seule étape ne
 doive tout résoudre (calcul brut + agrégation + décision) d'un coup.
 
+## Reconsolidation — analogie pipe Unix (après une session de clarification)
+
+Repris plus tard suite à une confusion sur le concept de couches.
+
+### Base très simple
+
+Une couche prend **plusieurs nombres en entrée** et ressort **plusieurs
+nombres en sortie** (potentiellement un nombre différent de valeurs). Par
+exemple `[5, 2, 8]` → `[12, 3]`. Empiler deux couches = la sortie de la
+première devient l'entrée de la seconde.
+
+### Analogie avec un pipe Unix (`commande1 | commande2`)
+
+La sortie de `commande1` devient l'entrée de `commande2`, sans que
+`commande2` ait besoin de savoir comment `commande1` a produit ce
+résultat — juste ce qu'elle reçoit en entrée. Bonne analogie pour la
+structure séquentielle des couches.
+
+Nuance à corriger dans l'analogie : dans un pipe Unix, chaque commande
+fait un travail **différent et défini à l'avance par un humain** (`grep`,
+puis `sort`, puis `uniq`...). Dans un réseau de neurones, chaque couche
+fait le **même type d'opération générale** (une transformation de
+nombres), mais avec des réglages internes (poids) qui ne sont pas écrits
+à la main — ils sont **appris** pendant l'entraînement. Le "quoi fait
+chaque étape" émerge de l'ajustement des poids, il n'est pas défini
+d'avance comme dans un pipe.
+
+### Pourquoi une couche "complique" l'info tout en "simplifiant" le travail suivant — pas contradictoire
+
+Exemple `sort | uniq` sur un fichier de logs :
+- `uniq` seul sur un fichier **non trié** ne sert presque à rien : il ne
+  détecte les doublons que s'ils sont **côte à côte** — des doublons
+  éloignés passent inaperçus.
+- `sort | uniq` : `sort` **réorganise** les lignes pour que les doublons
+  se retrouvent côte à côte — ce n'est pas un filtrage, c'est une
+  **transformation qui rend le travail suivant possible**.
+
+Transposé aux couches : la couche 1 ne "filtre" pas les pixels — elle les
+**transforme** en quelque chose de nouveau ("voici où se trouvent des
+bords", une info construite, absente telle quelle des pixels bruts). La
+couche 2 reçoit cette info enrichie et peut faire quelque chose
+d'impossible directement sur des pixels bruts : assembler des bords
+proches pour dire "ceci est un contour d'oreille".
+
+**Les deux affirmations sont vraies en même temps, sans contradiction** :
+- La couche **complique/enrichit** l'information brute (plus riche
+  qu'avant : pixels → bords avec position/orientation).
+- Mais elle **simplifie** le travail de la couche suivante (chercher un
+  contour d'oreille est bien plus facile à partir de bords déjà
+  identifiés que directement à partir de pixels bruts).
+
+Même paradoxe apparent que `sort` avant `uniq` : trier ajoute une
+structure (les lignes ne sont plus dans l'ordre brut du fichier), mais ça
+simplifie radicalement le travail de `uniq` derrière. Plus d'information
+structurée en sortie = moins de travail difficile pour l'étape suivante.
+
+### Correction importante — CNN ≠ Transformer (LLM)
+
+Point de confusion à corriger explicitement : évoquer un **CNN**
+(Convolutional Neural Network, utilisant des **filtres** détectant des
+motifs visuels — bords, textures) pour illustrer "plusieurs détecteurs en
+parallèle à chaque couche" était une **analogie**, pas une description du
+mécanisme réel d'un LLM.
+
+Un LLM est un **Transformer**, qui utilise l'**attention** (Q/K/V, voir
+`20-mecanisme-attention-qkv-multihead.md`) plutôt que des filtres. CNN et
+Transformer sont deux **architectures différentes** de réseaux de
+neurones — toutes deux organisées en couches, mais avec un mécanisme
+interne différent à chaque couche (filtres pour CNN, attention pour
+Transformer). Le principe général de spécialisation parallèle (plusieurs
+détecteurs différents à la même étape) est valable dans les deux, mais ce
+n'est pas le même mécanisme concret.
+
 ## À venir
 
 - [ ] Fonction d'activation — rôle précis (pourquoi "décider si le signal

@@ -34,6 +34,7 @@ Vault Obsidian : ouvrir ce dossier directement comme vault (plugin **Obsidian Gi
 - [ ] Remotes : clone, push, pull, fetch
 - [ ] Résolution de conflits
 - [ ] Rebase vs merge
+- [x] Purger un fichier de tout l'historique (`git filter-repo`) — module hors-série, `git/notes/03-purge-historique-filter-repo.md`
 
 ## Suivi de progression — Logstash
 
@@ -60,14 +61,14 @@ Vault Obsidian : ouvrir ce dossier directement comme vault (plugin **Obsidian Gi
 - [x] RAG / fine-tuning — critères de décision (fréquence, nature, volume/coût)
 - [x] Limites et biais — hallucinations, sur-confiance
 
-TP prévu à faire quand une clé API sera disponible : `ia-concepts/exercices/tp-ansible-llm.md`.
+TP réalisé avec succès : `ia-concepts/exercices/tp-ansible-llm-resultat.md`.
 
 ## Suivi de progression — IA, vague 2 (approfondissement)
 
 **Paramètres et fonctionnement pratique**
 - [ ] Fenêtre de contexte en pratique (résumé progressif, compression, gestion d'historique long)
-- [ ] Paramètres de génération (`temperature`, `top_p`/`top_k`)
-- [ ] Multimodalité (image/PDF au-delà du texte)
+- [x] Paramètres de génération (`temperature`, `top_p`/`top_k`) — `ia-concepts/notes/16-...md`, `18-top-k-top-p.md`
+- [x] Multimodalité (image/PDF au-delà du texte) — `ia-concepts/notes/19-multimodalite-patches-positional-embedding.md`
 - [ ] Guardrails et garde-fous en production
 - [ ] Coûts et facturation (tokens → €, input vs output)
 
@@ -88,3 +89,16 @@ TP prévu à faire quand une clé API sera disponible : `ia-concepts/exercices/t
 
 **TP en préparation**
 - [ ] LLM local de bout en bout — Ollama (inférence) puis Unsloth/QLoRA (fine-tuning) sur RTX 3070 8 Go, WSL2 — design posé dans `ia-concepts/exercices/tp-llm-local-ollama-qlora-draft.md`, pas encore exécuté
+- [ ] Agent Ansible avec boucle autonome (`until`/`retries`) — prolonge le TP 1 pour sentir en pratique agent vs tool use — design posé dans `ia-concepts/exercices/tp-ansible-agent-boucle-draft.md`, pas encore exécuté
+
+## Suivi de progression — IA, hors programme (approfondissements ponctuels)
+
+- [x] Deep learning vs Machine Learning (arbres de décision, forêts aléatoires) — `ia-concepts/notes/15-deep-learning-vs-ml-arbres-forets.md`
+- [x] Pré-entraînement vs fine-tuning d'instruction (+ RLHF) — `ia-concepts/notes/17-pretraining-vs-instruction-tuning.md`
+- [x] Mécanisme d'attention (Query/Key/Value, multi-head) — `ia-concepts/notes/20-mecanisme-attention-qkv-multihead.md`
+- [x] Carte de consolidation du pipeline complet (tokens → embeddings → couches/attention → logits → softmax/temperature → génération) — `ia-concepts/notes/21-carte-consolidation-pipeline-llm.md`
+- [x] Série de questions de consolidation (couches, activation, attention, RAG, diversité forêt/multi-head) — `ia-concepts/notes/22-serie-consolidation-couches-attention-rag.md`
+
+## Ressources externes
+
+Voir `ia-concepts/ressources-externes.md` — vidéos (3Blue1Brown, Karpathy) et livre (Géron) recommandés pour consolider les sujets les plus visuels (couches, activation, attention).
