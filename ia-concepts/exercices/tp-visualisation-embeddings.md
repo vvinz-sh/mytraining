@@ -1,10 +1,33 @@
-# TP — Visualiser des embeddings de mots dans l'espace (draft)
+# TP — Visualiser des embeddings de mots dans l'espace
 
-Statut : **design posé, pas encore exécuté**. TP léger, tout en Python
-sur CPU, aucun GPU ni clé API nécessaire — contrairement au TP LLM local
-(Ollama/QLoRA), celui-ci est rapide à mettre en place.
+Statut : **réalisé avec succès** ✅. TP léger, tout en Python sur CPU,
+aucun GPU ni clé API nécessaire.
 
-## Objectif
+## Résultat obtenu (résumé — détails complets dans les notes liées)
+
+Toutes les étapes ont été exécutées avec succès sur environnement WSL2 :
+- Arithmétique vectorielle confirmée : `king - man + woman ≈ queen`
+  (score 0.77), avec exploration de plusieurs autres analogies.
+- Deux découvertes annexes non prévues au design initial :
+  - Piège du hors-vocabulaire ignoré silencieusement par `doesnt_match`
+  - Limite des embeddings **statiques** face à la polysémie (ex : "bank"),
+    et pourquoi les LLM modernes (embeddings **contextuels** via
+    l'attention) résolvent ce problème
+- Visualisation PCA en 2D réalisée (matplotlib, via `savefig` — `plt.show()`
+  ne fonctionne pas nativement sous WSL sans serveur graphique), avec
+  regroupements cohérents observés (royauté, pays/capitales, animaux)
+- Découverte méthodologique importante : la PCA en 2D **déforme** les
+  distances réelles — une paire de mots peut sembler très proche sur le
+  graphique sans l'être réellement dans l'espace complet à 100
+  dimensions (vérifié concrètement avec tokyo/japan vs paris/france)
+
+Détails complets, code exact et explications dans :
+- `ia-concepts/notes/28-exploration-pratique-gensim-glove.md`
+  (arithmétique vectorielle, doesnt_match, polysémie)
+- `ia-concepts/notes/29-visualisation-pca-piege-distorsion.md`
+  (PCA, visualisation, piège de la distorsion)
+
+## Objectif initial
 
 Reproduire soi-même la visualisation vue dans la vidéo 3Blue1Brown :
 placer des mots dans un espace réduit à 2D/3D et vérifier
