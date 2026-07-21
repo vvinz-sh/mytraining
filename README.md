@@ -94,4 +94,4 @@ TP réalisé avec succès : `ia-concepts/exercices/tp-ansible-llm-resultat.md`.
 
 - [x] Deep learning vs Machine Learning (arbres de décision, forêts aléatoires) — `ia-concepts/notes/15-deep-learning-vs-ml-arbres-forets.md`
 - [x] Pré-entraînement vs fine-tuning d'instruction (+ RLHF) — `ia-concepts/notes/17-pretraining-vs-instruction-tuning.md`
-- [ ] Mécanisme d'attention (pourquoi les transformers traitent tout en même temps plutôt que séquentiellement) — repéré à creuser, pas encore fait
+- [x] Mécanisme d'attention (pourquoi les transformers traitent tout en même temps plutôt que séquentiellement)  `20-mecanisme-attention-qkv-multihead.md`
