@@ -40,6 +40,15 @@ modèle vient tout juste de produire lui-même**. C'est le terme
 technique standard utilisé dans toute documentation sur les LLM pour
 désigner ce cycle génération → réinjection → régénération.
 
+## Schéma interactif
+
+Version graphique cliquable de cette carte, générée en session :
+`pipeline_llm_schema_complet` (sauvegardée dans `ia-concepts/notes/rsc/`
+à côté de `pipeline_rag_embedding_generation`) — 5 blocs (texte →
+tokens vectorisés → couches empilées → logits/probabilités → token
+choisi, avec boucle autorégressive), chaque bloc cliquable pour
+rouvrir l'explication détaillée correspondante.
+
 ## Renvoi vers les notes détaillées de chaque étape
 
 - Tokens, ML de base : `01-domaine1...` (RHEL, sans lien direct), voir
