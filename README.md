@@ -91,7 +91,7 @@ TP réalisé avec succès : `ia-concepts/exercices/tp-ansible-llm-resultat.md`.
 - [ ] LLM local de bout en bout — Ollama (inférence) puis Unsloth/QLoRA (fine-tuning) sur RTX 3070 8 Go, WSL2 — design posé dans `ia-concepts/exercices/tp-llm-local-ollama-qlora-draft.md`, pas encore exécuté
 - [x] Agent Ansible avec boucle autonome (`include_tasks`/`loop`) — **réalisé avec succès** ✅ — design dans `ia-concepts/exercices/tp-ansible-agent-boucle-draft.md`, résultat et bugs corrigés dans `ia-concepts/exercices/tp-ansible-agent-resultat.md`
 - [x] Visualiser des embeddings de mots (gensim/GloVe, PCA, matplotlib) — **réalisé avec succès** ✅ — design dans `ia-concepts/exercices/tp-visualisation-embeddings-draft.md`, résultats et découvertes dans `ia-concepts/notes/28-exploration-pratique-gensim-glove.md` et `29-visualisation-pca-piege-distorsion.md`
-- [ ] RAG sur son propre repo + serveur MCP maison — chunking, embeddings, Chroma, serveur MCP custom connecté à Claude Desktop/Code — design posé dans `ia-concepts/exercices/tp-rag-mcp-notes-draft.md`, pas encore exécuté
+- [x] RAG sur son propre repo + serveur MCP maison — **réalisé avec succès** ✅ — design dans `ia-concepts/exercices/tp-rag-mcp-notes-draft.md`, résultat et bugs corrigés (venv/CUDA, distro WSL, Chroma/DrvFs) dans `ia-concepts/exercices/tp-rag-mcp-notes-resultat.md`
 
 ## Suivi de progression — IA, hors programme (approfondissements ponctuels)
 
@@ -101,7 +101,6 @@ TP réalisé avec succès : `ia-concepts/exercices/tp-ansible-llm-resultat.md`.
 - [x] Carte de consolidation du pipeline complet (tokens → embeddings → couches/attention → logits → softmax/temperature → génération) — `ia-concepts/notes/21-carte-consolidation-pipeline-llm.md`
 - [x] Série de questions de consolidation (couches, activation, attention, RAG, diversité forêt/multi-head) — `ia-concepts/notes/22-serie-consolidation-couches-attention-rag.md`
 - [x] Visualisation des embeddings dans l'espace, arithmétique vectorielle, hypothèse distributionnelle — `ia-concepts/notes/23-visualisation-embeddings-hypothese-distributionnelle.md`
-- [x] Approfondissement et comparaisons base de données SQL et vectoriels + apparté ticketing/marketing — `ia-concepts/notes/30-bases-vectorielles-ann-hnsw-sysadmin`
 
 ## Ressources externes
 
