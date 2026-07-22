@@ -100,6 +100,7 @@ TP réalisé avec succès : `ia-concepts/exercices/tp-ansible-llm-resultat.md`.
 - [x] Carte de consolidation du pipeline complet (tokens → embeddings → couches/attention → logits → softmax/temperature → génération) — `ia-concepts/notes/21-carte-consolidation-pipeline-llm.md`
 - [x] Série de questions de consolidation (couches, activation, attention, RAG, diversité forêt/multi-head) — `ia-concepts/notes/22-serie-consolidation-couches-attention-rag.md`
 - [x] Visualisation des embeddings dans l'espace, arithmétique vectorielle, hypothèse distributionnelle — `ia-concepts/notes/23-visualisation-embeddings-hypothese-distributionnelle.md`
+- [x] Approfondissement et comparaisons base de données SQL et vectoriels + apparté ticketing/marketing — `ia-concepts/notes/30-bases-vectorielles-ann-hnsw-sysadmin`
 
 ## Ressources externes
 
