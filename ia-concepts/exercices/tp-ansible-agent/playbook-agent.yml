@@ -1,0 +1,25 @@
+---
+- name: Agent d'analyse d'incident avec boucle autonome
+  hosts: localhost
+  vars:
+    log_windows:
+      - "tail -n 20 /var/log/messages-incident"
+      - "tail -n 100 /var/log/messages-incident"
+      - "tail -n 500 /var/log/messages-incident"
+    diagnostic_suffisant: false
+
+  tasks:
+    - name: Boucle d'analyse avec fenêtre de log croissante
+      include_tasks: analyser_fenetre.yml
+      loop: "{{ log_windows }}"
+      when: not (diagnostic_suffisant | bool)
+
+    - name: Afficher le diagnostic final si succès
+      debug:
+        msg: "DIAGNOSTIC FINAL (fenêtre: {{ derniere_fenetre }}): {{ derniere_analyse }}"
+      when: diagnostic_suffisant | bool
+
+    - name: Échouer proprement si aucune tentative n'a suffi
+      fail:
+        msg: "Diagnostic impossible après {{ log_windows | length }} tentatives - log probablement trop pauvre en information, même à la fenêtre la plus large."
+      when: not (diagnostic_suffisant | bool)

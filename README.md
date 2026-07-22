@@ -89,7 +89,7 @@ TP réalisé avec succès : `ia-concepts/exercices/tp-ansible-llm-resultat.md`.
 
 **TP en préparation**
 - [ ] LLM local de bout en bout — Ollama (inférence) puis Unsloth/QLoRA (fine-tuning) sur RTX 3070 8 Go, WSL2 — design posé dans `ia-concepts/exercices/tp-llm-local-ollama-qlora-draft.md`, pas encore exécuté
-- [ ] Agent Ansible avec boucle autonome (`until`/`retries`) — prolonge le TP 1 pour sentir en pratique agent vs tool use — design posé dans `ia-concepts/exercices/tp-ansible-agent-boucle-draft.md`, pas encore exécuté
+- [x] Agent Ansible avec boucle autonome (`include_tasks`/`loop`) — **réalisé avec succès** ✅ — design dans `ia-concepts/exercices/tp-ansible-agent-boucle-draft.md`, résultat et bugs corrigés dans `ia-concepts/exercices/tp-ansible-agent-resultat.md`
 - [x] Visualiser des embeddings de mots (gensim/GloVe, PCA, matplotlib) — **réalisé avec succès** ✅ — design dans `ia-concepts/exercices/tp-visualisation-embeddings-draft.md`, résultats et découvertes dans `ia-concepts/notes/28-exploration-pratique-gensim-glove.md` et `29-visualisation-pca-piege-distorsion.md`
 
 ## Suivi de progression — IA, hors programme (approfondissements ponctuels)
