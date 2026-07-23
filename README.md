@@ -12,7 +12,7 @@ Vault Obsidian : ouvrir ce dossier directement comme vault (plugin **Obsidian Gi
 | Ansible | Intermédiaire — rôles, Vault, structure de projet | notes/ + roles/ | ci-dessous |
 | Git | Débutant | notes/ | ci-dessous |
 | Logstash | Débutant | notes/ + pipelines/ | ci-dessous |
-| IA (concepts + pratique) | Vague 1 et 2 terminées, vague 3 (MLOps/Ops) en préparation | notes/ + exercices/ | [`ia-concepts/README.md`](ia-concepts/README.md) |
+| IA (concepts + pratique) | Vague 1 et 2 terminées, vague 3 (MLOps/Ops) en préparation | notes/ + exercices/ | voir ia-concepts/README.md |
 
 ## Suivi de progression — RHCSA (EX200)
 
@@ -34,7 +34,7 @@ Vault Obsidian : ouvrir ce dossier directement comme vault (plugin **Obsidian Gi
 - [ ] Remotes : clone, push, pull, fetch
 - [ ] Résolution de conflits
 - [ ] Rebase vs merge
-- [x] Purger un fichier de tout l'historique (`git filter-repo`) — module hors-série, `git/notes/03-purge-historique-filter-repo.md`
+- [x] Purger un fichier de tout l'historique (git filter-repo) — module hors-série, git/notes/03-purge-historique-filter-repo.md
 
 ## Suivi de progression — Logstash
 
@@ -55,12 +55,11 @@ Vault Obsidian : ouvrir ce dossier directement comme vault (plugin **Obsidian Gi
 
 Le détail complet (vague 1 base, vague 2 approfondissement, vague 3
 MLOps/Ops, hors-programme, TP réalisés/en réserve, ressources externes)
-est maintenant dans [`ia-concepts/README.md`](ia-concepts/README.md),
-pour garder ce fichier racine lisible à mesure que le module IA
-continue de grossir.
+est maintenant dans ia-concepts/README.md, pour garder ce fichier
+racine lisible à mesure que le module IA continue de grossir.
 
-R�sumé ultra-rapide :
-- ✅ Vague 1 (base) — terminée
-- ✅ Vague 2 (approfondissement : paramètres, hardware, écosystème) — terminée
-- 🚧 Vague 3 (MLOps/Ops : déploiement, monitoring, CI/CD, gouvernance, data engineering) — en préparation
+En bref :
+- Vague 1 (base) — terminée
+- Vague 2 (approfondissement : paramètres, hardware, écosystème) — terminée
+- Vague 3 (MLOps/Ops : déploiement, monitoring, CI/CD, gouvernance, data engineering) — en préparation
 - 4 TP réalisés avec succès, 2 en réserve
