@@ -63,3 +63,10 @@ En bref :
 - Vague 2 (approfondissement : paramètres, hardware, écosystème) — terminée
 - Vague 3 (MLOps/Ops : déploiement, monitoring, CI/CD, gouvernance, data engineering) — en préparation
 - 4 TP réalisés avec succès, 2 en réserve
+
+## Réflexions transversales
+
+Voir `reflexions-transversales.md` — parallèles conceptuels entre
+Ansible/Git/RHEL8/Logstash/IA (pipelines, idempotence, moindre
+privilège, boucles avec réajustement...) et idées de TP croisés entre
+catégories.
