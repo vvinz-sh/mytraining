@@ -98,6 +98,76 @@ Nuance : ce n'est pas que la tâche soit "mineure" en général, c'est que
 spécifique) est structurellement simple à exprimer, même si le modèle
 qui la supporte est énorme.
 
+## Reconsolidation — poids et gradients en détail (avec un exemple concret)
+
+Repris plus tard pour bien démystifier ce qu'est concrètement un
+gradient, à partir d'un exemple ultra-simplifié à un seul poids.
+
+### Un seul "neurone" pour commencer
+
+Modèle jouet : `prix_prédit = poids × surface`. Avec `poids = 2` et une
+surface de 50 m², prédiction = 100. Vrai prix = 150, erreur = 50.
+
+Augmenter le poids à 3 donnerait `3 × 50 = 150` — la bonne réponse.
+Mais comment le modèle **sait-il lui-même** qu'il faut augmenter le
+poids (pas le diminuer), sans qu'un humain le lui dise ?
+
+### Le gradient — une pente, rien de plus mystérieux
+
+Le gradient répond à : "si j'augmente ce poids d'un tout petit peu,
+l'erreur augmente-t-elle ou diminue-t-elle ?" — techniquement une
+dérivée, mais l'intuition suffit : une bille sur une courbe
+(poids en abscisse, erreur en ordonnée), le gradient dit si le terrain
+descend vers la gauche ou la droite à l'endroit où on se trouve.
+
+**Convention** : un gradient **négatif** signifie que l'erreur diminue
+quand le poids **augmente** (donc il faut augmenter le poids) ; un
+gradient **positif** signifie l'inverse (il faut diminuer le poids).
+
+### Pourquoi des petits pas, jamais un bond direct
+
+Même si le gradient indique la bonne direction, l'algorithme n'ajuste
+jamais le poids d'un coup à sa valeur "parfaite". Raison structurelle,
+au-delà du simple risque de sur-correction : dans un vrai modèle, il
+n'y a pas un seul poids mais des **milliards, tous interconnectés**. Un
+même poids participe au calcul de millions d'exemples différents — un
+grand saut qui corrige parfaitement un exemple pourrait **casser** ce
+qui fonctionnait déjà pour d'autres exemples, puisque ce poids n'est
+jamais utilisé isolément.
+
+**Learning rate** : le paramètre qui contrôle la taille du pas
+d'ajustement à chaque itération. Compromis à connaître :
+- **Trop grand** → le modèle peut osciller sans jamais se stabiliser
+  (rebondir d'un bord à l'autre d'une vallée), voire diverger
+  (l'erreur augmente au lieu de diminuer).
+- **Trop petit** → apprentissage extrêmement lent, des milliers
+  d'itérations pour un progrès minime.
+
+### Le cycle d'entraînement complet — vocabulaire assemblé
+
+```
+1. Le modèle fait une prédiction (avec ses poids actuels)
+2. On compare à la bonne réponse → calcul de l'erreur
+3. On calcule le gradient de chaque poids (direction + intensité de correction)
+4. On ajuste chaque poids d'un petit pas (taille = learning rate)
+5. On répète avec l'exemple suivant, des milliards de fois
+```
+
+Ce processus complet (étapes 3-4 : propager l'erreur pour ajuster tous
+les poids) s'appelle la **rétropropagation** (backpropagation) — terme
+mentionné en passant plus tôt dans le repo, jamais détaillé jusqu'ici.
+L'ensemble du mécanisme (avancer par petits pas guidés par le gradient)
+s'appelle la **descente de gradient**.
+
+### Lien direct avec le coût mémoire de l'entraînement
+
+Le gradient est cette "boussole" calculée pour **chaque poids
+individuellement** — il faut en stocker un pour chacun des milliards de
+poids, en parallèle des poids eux-mêmes. C'est exactement pourquoi
+l'entraînement double quasiment la mémoire nécessaire (poids +
+gradients), avant même de compter les états d'optimiseur — voir le
+facteur ×4-6 détaillé plus haut dans cette même note.
+
 ## À venir (vague 2)
 
 - [ ] Paramètres de génération (`temperature`, `top_p`/`top_k`)
