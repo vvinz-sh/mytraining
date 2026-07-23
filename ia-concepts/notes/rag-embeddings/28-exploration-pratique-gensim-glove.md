@@ -163,7 +163,7 @@ Résumé de la différence :
 ## Lien avec le TP structuré
 
 Cette session couvre en pratique l'étape 3 du design
-(`tp-visualisation-embeddings-draft.md` — "tester l'arithmétique
+(`ia-concepts/exercices/tp-visualisation-embeddings/tp-visualisation-embeddings.md` — "tester l'arithmétique
 vectorielle directement"). Reste à faire pour le TP complet : sélection
 d'un ensemble de mots à visualiser, réduction de dimensionnalité
 (PCA/t-SNE), affichage (matplotlib/plotly).

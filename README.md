@@ -61,12 +61,12 @@ Vault Obsidian : ouvrir ce dossier directement comme vault (plugin **Obsidian Gi
 - [x] RAG / fine-tuning — critères de décision (fréquence, nature, volume/coût)
 - [x] Limites et biais — hallucinations, sur-confiance
 
-TP réalisé avec succès : `ia-concepts/exercices/tp-ansible-llm-resultat.md`.
+TP réalisé avec succès : `ia-concepts/exercices/tp-ansible-llm/tp-ansible-llm-resultat.md`.
 
 ## Suivi de progression — IA, vague 2 (approfondissement) — terminée ✅
 
 **Paramètres et fonctionnement pratique** — terminé ✅
-- [x] Fenêtre de contexte en pratique (compaction, résumé progressif, memory tool) — `ia-concepts/notes/24-fenetre-contexte-compaction.md`
+- [x] Fenêtre de contexte en pratique (compaction, résumé progressif, memory tool) — `ia-concepts/notes/generation-parametres/24-fenetre-contexte-compaction.md`
 - [x] Paramètres de génération (`temperature`, `top_p`/`top_k`) — `16-...md`, `18-top-k-top-p.md`
 - [x] Multimodalité (image/PDF au-delà du texte) — `19-multimodalite-patches-positional-embedding.md`
 - [x] Guardrails et garde-fous en production (prompt injection, moindre privilège, filtrage de sortie) — `25-guardrails-prompt-injection-moindre-privilege.md`
@@ -88,19 +88,19 @@ TP réalisé avec succès : `ia-concepts/exercices/tp-ansible-llm-resultat.md`.
 - [x] Serveurs MCP existants (panorama) + aparté Hermes (modèle open-weight vs Hermes Agent, framework agentique)
 
 **TP en préparation**
-- [ ] LLM local de bout en bout — Ollama (inférence) puis Unsloth/QLoRA (fine-tuning) sur RTX 3070 8 Go, WSL2 — design posé dans `ia-concepts/exercices/tp-llm-local-ollama-qlora-draft.md`, pas encore exécuté
-- [x] Agent Ansible avec boucle autonome (`include_tasks`/`loop`) — **réalisé avec succès** ✅ — design dans `ia-concepts/exercices/tp-ansible-agent-boucle-draft.md`, résultat et bugs corrigés dans `ia-concepts/exercices/tp-ansible-agent-resultat.md`
-- [x] Visualiser des embeddings de mots (gensim/GloVe, PCA, matplotlib) — **réalisé avec succès** ✅ — design dans `ia-concepts/exercices/tp-visualisation-embeddings-draft.md`, résultats et découvertes dans `ia-concepts/notes/28-exploration-pratique-gensim-glove.md` et `29-visualisation-pca-piege-distorsion.md`
-- [x] RAG sur son propre repo + serveur MCP maison — **réalisé avec succès** ✅ — design dans `ia-concepts/exercices/tp-rag-mcp-notes-draft.md`, résultat et bugs corrigés (venv/CUDA, distro WSL, Chroma/DrvFs) dans `ia-concepts/exercices/tp-rag-mcp-notes-resultat.md`
+- [ ] LLM local de bout en bout — Ollama (inférence) puis Unsloth/QLoRA (fine-tuning) sur RTX 3070 8 Go, WSL2 — design posé dans `ia-concepts/exercices/tp-llm-local/tp-llm-local-ollama-qlora-draft.md`, pas encore exécuté
+- [x] Agent Ansible avec boucle autonome (`include_tasks`/`loop`) — **réalisé avec succès** ✅ — design dans `ia-concepts/exercices/tp-ansible-agent/tp-ansible-agent-boucle-draft.md`, résultat et bugs corrigés dans `ia-concepts/exercices/tp-ansible-agent/tp-ansible-agent-resultat.md`
+- [x] Visualiser des embeddings de mots (gensim/GloVe, PCA, matplotlib) — **réalisé avec succès** ✅ — design dans `ia-concepts/exercices/tp-visualisation-embeddings/tp-visualisation-embeddings.md`, résultats et découvertes dans `ia-concepts/notes/rag-embeddings/28-exploration-pratique-gensim-glove.md` et `ia-concepts/notes/rag-embeddings/29-visualisation-pca-piege-distorsion.md`
+- [x] RAG sur son propre repo + serveur MCP maison — **réalisé avec succès** ✅ — design dans `ia-concepts/exercices/tp-rag-mcp/tp-rag-mcp-notes-draft.md`, résultat et bugs corrigés (venv/CUDA, distro WSL, Chroma/DrvFs) dans `ia-concepts/exercices/tp-rag-mcp/tp-rag-mcp-notes-resultat.md`
 
 ## Suivi de progression — IA, hors programme (approfondissements ponctuels)
 
-- [x] Deep learning vs Machine Learning (arbres de décision, forêts aléatoires) — `ia-concepts/notes/15-deep-learning-vs-ml-arbres-forets.md`
-- [x] Pré-entraînement vs fine-tuning d'instruction (+ RLHF) — `ia-concepts/notes/17-pretraining-vs-instruction-tuning.md`
-- [x] Mécanisme d'attention (Query/Key/Value, multi-head) — `ia-concepts/notes/20-mecanisme-attention-qkv-multihead.md`
-- [x] Carte de consolidation du pipeline complet (tokens → embeddings → couches/attention → logits → softmax/temperature → génération) — `ia-concepts/notes/21-carte-consolidation-pipeline-llm.md`
-- [x] Série de questions de consolidation (couches, activation, attention, RAG, diversité forêt/multi-head) — `ia-concepts/notes/22-serie-consolidation-couches-attention-rag.md`
-- [x] Visualisation des embeddings dans l'espace, arithmétique vectorielle, hypothèse distributionnelle — `ia-concepts/notes/23-visualisation-embeddings-hypothese-distributionnelle.md`
+- [x] Deep learning vs Machine Learning (arbres de décision, forêts aléatoires) — `ia-concepts/notes/fondamentaux/15-deep-learning-vs-ml-arbres-forets.md`
+- [x] Pré-entraînement vs fine-tuning d'instruction (+ RLHF) — `ia-concepts/notes/fondamentaux/17-pretraining-vs-instruction-tuning.md`
+- [x] Mécanisme d'attention (Query/Key/Value, multi-head) — `ia-concepts/notes/attention-architecture/20-mecanisme-attention-qkv-multihead.md`
+- [x] Carte de consolidation du pipeline complet (tokens → embeddings → couches/attention → logits → softmax/temperature → génération) — `ia-concepts/notes/attention-architecture/21-carte-consolidation-pipeline-llm.md`
+- [x] Série de questions de consolidation (couches, activation, attention, RAG, diversité forêt/multi-head) — `ia-concepts/notes/attention-architecture/22-serie-consolidation-couches-attention-rag.md`
+- [x] Visualisation des embeddings dans l'espace, arithmétique vectorielle, hypothèse distributionnelle — `ia-concepts/notes/rag-embeddings/23-visualisation-embeddings-hypothese-distributionnelle.md`
 
 ## Ressources externes
 

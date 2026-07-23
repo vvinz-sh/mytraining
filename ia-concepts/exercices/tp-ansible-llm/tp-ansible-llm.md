@@ -9,7 +9,7 @@ Mettre en pratique :
 - Le module `uri` (appel API, vérification `status_code`)
 - La gestion de secrets via Ansible Vault (clé API jamais en clair)
 - La vérification de `stop_reason` (réponse tronquée ou non) vue dans
-  `ia-concepts/notes/09-usage-pratique-api-ansible.md`
+  `ia-concepts/notes/generation-parametres/09-usage-pratique-api-ansible.md`
 
 ## Scénario
 

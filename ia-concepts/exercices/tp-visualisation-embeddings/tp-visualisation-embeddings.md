@@ -22,9 +22,9 @@ Toutes les étapes ont été exécutées avec succès sur environnement WSL2 :
   dimensions (vérifié concrètement avec tokyo/japan vs paris/france)
 
 Détails complets, code exact et explications dans :
-- `ia-concepts/notes/28-exploration-pratique-gensim-glove.md`
+- `ia-concepts/notes/rag-embeddings/28-exploration-pratique-gensim-glove.md`
   (arithmétique vectorielle, doesnt_match, polysémie)
-- `ia-concepts/notes/29-visualisation-pca-piege-distorsion.md`
+- `ia-concepts/notes/rag-embeddings/29-visualisation-pca-piege-distorsion.md`
   (PCA, visualisation, piège de la distorsion)
 
 ## Objectif initial

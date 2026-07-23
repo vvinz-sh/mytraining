@@ -90,7 +90,7 @@ d'être considérée comme fiable.
 
 ## TP embeddings — terminé ✅
 
-Toutes les étapes prévues dans `tp-visualisation-embeddings-draft.md`
+Toutes les étapes prévues dans `ia-concepts/exercices/tp-visualisation-embeddings/tp-visualisation-embeddings.md`
 ont été réalisées avec succès : arithmétique vectorielle, exploration
 (doesnt_match, polysémie), réduction PCA, visualisation matplotlib.
 Reste en extension future (non prioritaire) : comparaison avec des

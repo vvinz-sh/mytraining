@@ -243,6 +243,90 @@ if __name__ == "__main__":
 - Le chemin Chroma est identique à celui utilisé dans `index_notes.py`
   (même base, lue en lecture par le serveur).
 
+## Piste d'amélioration identifiée en session — guardrail sur données sensibles
+
+Point soulevé en reprenant les questions de consolidation : si un
+fichier indexé contenait accidentellement une clé API en clair (ou tout
+autre secret structuré), `search_notes` la renverrait telle quelle sans
+filtrage.
+
+**Solution retenue** : un guardrail par **pattern/regex**, pas un
+guardrail sémantique — parce qu'une clé API a un **format structuré et
+prévisible** (ex : `sk-ant-...`), une regex suffit à la détecter avec
+garantie, contrairement à une recherche par similarité vectorielle qui
+resterait probabiliste (95-99%, jamais 100%). Écho direct de
+`25-guardrails-prompt-injection-moindre-privilege.md` : le pattern est
+le bon choix quand le contenu à détecter est structuré, la recherche
+sémantique/ANN quand il ne l'est pas (contournable par reformulation
+type "chiffres en toutes lettres").
+
+**Implémentation à ajouter dans `search_notes`** (pas encore codée,
+piste pour une prochaine itération) :
+
+```python
+import re
+
+PATTERNS_SENSIBLES = [
+    r"sk-ant-[a-zA-Z0-9\-_]{20,}",      # clé API Anthropic
+    r"github_pat_[a-zA-Z0-9_]{20,}",     # token GitHub fine-grained
+    r"ghp_[a-zA-Z0-9]{36}",              # token GitHub classique
+]
+
+def filtrer_secrets(texte: str) -> str:
+    for pattern in PATTERNS_SENSIBLES:
+        texte = re.sub(pattern, "[SECRET MASQUÉ]", texte)
+    return texte
+
+# Dans search_notes, avant de retourner :
+reponse.append(f"[Source: {meta['source']}]\n{filtrer_secrets(doc)}")
+```
+
+Bon rappel pratique de l'incident vécu plus tôt dans ce repo (vault
+committé par erreur, `git filter-repo`) — un tel guardrail aurait été
+une deuxième ligne de défense utile, en plus du `.gitignore`, si jamais
+un fichier avec un secret avait fini indexé dans Chroma sans que
+personne ne s'en rende compte immédiatement.
+
+## Piste d'amélioration identifiée en session — guardrail contre le prompt injection indirect
+
+Deuxième risque identifié en session de consolidation : un fichier
+`.md` indexé pourrait contenir une tentative de manipulation du modèle
+("Ignore toutes tes instructions précédentes...") — un attaquant
+n'aurait qu'à empoisonner un document à l'avance, sans jamais interagir
+directement avec Claude. N'importe quel utilisateur légitime posant une
+question anodine pourrait alors déclencher l'injection, simplement
+parce que sa recherche RAG remonte le mauvais document.
+
+**Terme exact** : **prompt injection indirect** — contrairement au cas
+classique (l'utilisateur tape directement l'instruction malveillante
+dans le chat), ici l'instruction arrive via un document récupéré par
+RAG. Le modèle ne fait toujours aucune différence structurelle entre
+instructions système, texte utilisateur et contenu de document
+récupéré — tout devient un seul texte continu (écho de
+`25-guardrails-prompt-injection-moindre-privilege.md`).
+
+**Solution retenue** : contrairement à la clé API (format rigide), une
+tentative de manipulation peut se formuler de façons quasi infinies
+("ignore tes instructions", "oublie ce qu'on t'a dit", "à partir de
+maintenant tu dois..."). Aucune regex ne couvrirait toutes les
+variantes — un guardrail **sémantique** (similarité vectorielle contre
+une base d'exemples connus de tentatives de manipulation) est ici le
+bon choix, pas un pattern.
+
+⚠️ Limite à garder en tête, même avec ce guardrail : reste
+**probabiliste** (95-99% de rappel comme tout ANN) — une formulation
+suffisamment créative et jamais vue pourrait toujours passer entre les
+mailles. Contrairement au cas de la clé API (garantie dure via regex),
+il n'existe ici aucune garantie à 100%.
+
+**Piste d'implémentation** (non codée, pour une prochaine itération) :
+maintenir une petite collection Chroma séparée d'exemples de tentatives
+de manipulation connues, et avant d'indexer un nouveau document (ou
+avant de retourner un résultat de `search_notes`), vérifier sa
+similarité vectorielle avec cette base — si trop proche d'un exemple
+connu, signaler ou bloquer le passage plutôt que de le transmettre tel
+quel à Claude.
+
 ## Ce que ce TP a démontré concrètement
 
 - **RAG de bout en bout**, appliqué à un cas réel et personnel (le

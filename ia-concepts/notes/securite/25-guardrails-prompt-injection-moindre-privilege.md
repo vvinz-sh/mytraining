@@ -86,6 +86,68 @@ garde-fous techniques durs autour, exactement les réflexes de sécurité
 déjà appliqués en infra (IAM scopé, pare-feu applicatif), transposés au
 contexte LLM.
 
+## Reconsolidation — défense en profondeur et guardrails d'un LLM lui-même
+
+Repris plus tard, à partir d'un scénario concret : un serveur MCP
+connectant un LLM à une application pour un test de sécurité (pentest),
+volontairement **sans guardrail côté serveur** puisque l'objectif est
+justement de chercher des failles.
+
+### Deux couches de guardrails complètement indépendantes
+
+1. **Guardrail du serveur MCP** — codé et contrôlé par le développeur,
+   peut être désactivé pour un usage légitime (comme un pentest).
+2. **Comportement appris du modèle lui-même** — issu du fine-tuning
+   d'instruction + RLHF, câblé dans les poids, **indépendant de toute
+   infrastructure externe**. Aucun serveur MCP, aussi permissif soit-il,
+   ne peut désactiver ce comportement — la résistance apprise vit dans
+   les poids du modèle, pas dans l'architecture qui l'entoure.
+
+Conséquence pratique : désactiver le guardrail 1 (légitime pour un
+pentest) ne désactive jamais le guardrail 2. Un modèle peut aider sur
+l'essentiel d'un test de sécurité (analyser la logique métier, proposer
+des scénarios d'attaque, expliquer un risque) tout en bloquant
+ponctuellement une demande précise qui ressemble de trop près à
+"produire un exploit générique" — même en plein milieu d'un contexte
+légitime autorisé.
+
+### Le vrai critère : type de sortie produite, pas type d'action demandée
+
+Nuance plus fine que "autorisé vs interdit" : la distinction qui compte
+est entre :
+- **Un artefact réutilisable et transférable** (script d'exploit prêt à
+  l'emploi, copiable-collable sur n'importe quel autre système) — reste
+  sensible quel que soit le contexte présenté, même avec une bonne
+  raison.
+- **Un compte-rendu d'action + résultat, contextualisé** (comme un
+  rapport de pentest classique : méthodologie suivie, preuve d'impact
+  concrète sur le système précis testé, sans fournir un script autonome
+  généralisable) — passe beaucoup plus naturellement.
+
+Ce jugement reste **contextuel et probabiliste**, pas une règle dure
+universelle — la gravité de la faille et la portabilité de la méthode
+découverte (spécifique au système testé vs technique générique
+facilement réutilisable ailleurs) jouent aussi un rôle.
+
+### Défense en profondeur — principe général de sécurité, pas spécifique à l'IA
+
+Aucune couche de sécurité seule n'est jamais suffisante — chacune a ses
+propres failles et angles morts, mais superposées, elles se couvrent
+mutuellement. Un attaquant devrait contourner **toutes** les couches à
+la fois pour réussir, pas une seule.
+
+Architecture à trois niveaux pour le scénario du pentest via MCP :
+1. Guardrail MCP (optionnel, désactivable pour un test légitime)
+2. Comportement entraîné du modèle (jamais désactivable, indépendant de
+   l'infra)
+3. Moindre privilège de l'application testée elle-même (même si une
+   faille est trouvée, l'application devrait limiter les dégâts
+   possibles par sa propre conception)
+
+Principe à retenir : la défense en profondeur n'est jamais "avoir une
+seule barrière parfaite" — c'est accepter qu'aucune barrière ne l'est,
+et compenser par la superposition de plusieurs couches indépendantes.
+
 ## À venir (vague 2)
 
 - [ ] Coûts et facturation (tokens → €, input vs output)

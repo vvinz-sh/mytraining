@@ -63,5 +63,5 @@ sont tous couverts :
 - RAG vs fine-tuning — critères de décision
 - Limites et biais — hallucinations, sur-confiance
 
-Reste ouvert : le TP prévu (`ia-concepts/exercices/tp-ansible-llm.md`),
+Reste ouvert : le TP prévu (`ia-concepts/exercices/tp-ansible-llm/tp-ansible-llm.md`),
 à faire quand une clé API sera disponible.
