@@ -1,0 +1,39 @@
+<div style="position: relative; width: 100%; height: 440px;">
+<canvas id="radarChart2" role="img" aria-label="Graphique radar complet sur 12 thématiques comparant le niveau atteint à un référentiel de junior MLOps 2 ans d'expérience, sur 10 : fondamentaux 6, génération et paramètres 7, RAG et embeddings 7, attention et architecture 6, hardware 5, sécurité 6, écosystème 3, déploiement et serving 1, monitoring et évaluation 1, CI/CD et pipelines MLOps 0, gouvernance et conformité 2, ingénierie de données pour le ML 0">Niveau sur 12 thématiques face à un junior MLOps 2 ans d'XP : fondamentaux 6, génération et paramètres 7, RAG et embeddings 7, attention et architecture 6, hardware 5, sécurité 6, écosystème 3, déploiement et serving 1, monitoring et évaluation 1, CI/CD et pipelines MLOps 0, gouvernance et conformité 2, ingénierie de données 0.</canvas>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const ctx = document.getElementById('radarChart2');
+const labels = ['Fondamentaux', 'Génération & paramètres', 'RAG & embeddings', 'Attention & architecture', 'Hardware', 'Sécurité', 'Écosystème', 'Déploiement & serving', 'Monitoring & évaluation', 'CI/CD & pipelines MLOps', 'Gouvernance & conformité', 'Ingénierie de données'];
+const values = [6, 7, 7, 6, 5, 6, 3, 1, 1, 0, 2, 0];
+new Chart(ctx, {
+  type: 'radar',
+  data: {
+    labels: labels,
+    datasets: [{
+      label: 'Niveau estimé',
+      data: values,
+      backgroundColor: 'rgba(42,120,214,0.15)',
+      borderColor: '#2a78d6',
+      pointBackgroundColor: '#2a78d6',
+      borderWidth: 2,
+      pointRadius: 3
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      r: {
+        min: 0,
+        max: 10,
+        ticks: { stepSize: 2, color: '#898781', backdropColor: 'transparent' },
+        grid: { color: '#e1e0d9' },
+        angleLines: { color: '#e1e0d9' },
+        pointLabels: { color: '#52514e', font: { size: 10.5 } }
+      }
+    },
+    plugins: { legend: { display: false } }
+  }
+});
+</script>
