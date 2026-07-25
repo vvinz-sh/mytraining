@@ -77,10 +77,10 @@ morts complets du module.
 
 ### 3. CI/CD & pipelines MLOps
 
-- [ ] Registre de modèles (model registry) — versionner un modèle comme un artefact
-- [ ] Tracking d'expériences (MLflow, W&B) — comparer plusieurs runs/fine-tunings
-- [ ] Pipeline de réentraînement automatisé (déclenché par drift ou planning)
-- [ ] Tests automatisés spécifiques au ML (régression sur les sorties, pas juste tests de code classique)
+- [x] Registre de modèles (model registry) — versionner un modèle comme un artefact
+- [x] Tracking d'expériences (MLflow, W&B) — comparer plusieurs runs/fine-tunings
+- [x] Pipeline de réentraînement automatisé (déclenché par drift ou planning)
+- [x] Tests automatisés spécifiques au ML (régression sur les sorties, pas juste tests de code classique)
 - [ ] Déploiement progressif (canary, blue-green) appliqué à un modèle
 
 ### 4. Gouvernance & conformité
