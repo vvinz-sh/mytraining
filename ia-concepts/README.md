@@ -60,12 +60,12 @@ MLOps (~2 ans d'XP) — ces catégories étaient jusqu'ici des angles
 morts complets du module.
 
 ### 1. Déploiement & serving
-
 - [ ] Conteneuriser un modèle (Docker) — packager un serving simple
-- [ ] Frameworks de serving dédiés (vLLM, TGI, Triton) vs un serveur classique (Flask/FastAPI)
-- [ ] Scaling horizontal et load balancing pour une API de modèle
+- [~] Frameworks de serving dédiés (vLLM, TGI, Triton) vs un serveur classique — pourquoi ils existent vu, jamais testés concrètement
+- [x] Scaling horizontal et load balancing pour une API de modèle
 - [ ] Autoscaling selon la charge (Kubernetes HPA ou équivalent cloud)
-- [ ] Latence/throughput : batching de requêtes, streaming de réponses
+- [x] Batching de requêtes (dynamic batching, timeout)
+- [ ] Streaming de réponses
 
 ### 2. Monitoring & évaluation
 - [ ] Logging structuré des requêtes/réponses d'un LLM en prod
