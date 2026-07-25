@@ -70,6 +70,16 @@ l'organisation doit quand même :
 - Réaliser sa propre évaluation du fournisseur (vendor assessment)
 - Documenter la **base légale du traitement** (Article 6 RGPD :
   consentement, intérêt légitime...)
+- Respecter les principes de l'Article 5 RGPD, indépendamment du
+  DPA ou du ZDR :
+  - **Limitation de la finalité** : une donnée collectée pour un usage
+    précis (ex : obtenir une réponse médicale) ne doit pas être
+    réutilisée pour un usage incompatible (ex : sécurité/anti-abus)
+    sans base légale propre
+  - **Limitation de la conservation** : une donnée ne doit être
+    conservée que le temps nécessaire à la finalité d'origine — le
+    ZDR répond à ce principe côté fournisseur, mais ne dispense pas
+    de vérifier l'alignement finalité/conservation en amont
 - Réaliser une **analyse d'impact (DPIA)** si le traitement présente un
   risque élevé
 - **Informer les personnes concernées** — les collègues dont les notes
@@ -99,6 +109,10 @@ sensible, plus les obligations grimpent.
 4. Les guardrails (regex, NER, sémantique) restent une bonne pratique
    de **minimisation** des données, mais ne remplacent jamais les
    obligations contractuelles et documentaires
+
+## Ressource externe
+
+- [RGPD — Chapitre II : Principes](https://www.cnil.fr/fr/reglement-europeen-protection-donnees/chapitre2) (CNIL) - articles 5 à 11, dont la limitation de finalité et de conservation
 
 ## À venir (gouvernance)
 
