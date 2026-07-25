@@ -81,7 +81,7 @@ morts complets du module.
 - [x] Tracking d'expériences (MLflow, W&B) — comparer plusieurs runs/fine-tunings
 - [x] Pipeline de réentraînement automatisé (déclenché par drift ou planning)
 - [x] Tests automatisés spécifiques au ML (régression sur les sorties, pas juste tests de code classique)
-- [ ] Déploiement progressif (canary, blue-green) appliqué à un modèle
+- [x] Déploiement progressif (canary, blue-green) appliqué à un modèle
 
 ### 4. Gouvernance & conformité
 
