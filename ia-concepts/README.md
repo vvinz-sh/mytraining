@@ -85,7 +85,7 @@ morts complets du module.
 
 ### 4. Gouvernance & conformité
 
-- [ ] RGPD appliqué à l'IA (données personnelles dans les prompts/logs)
+- [x] RGPD appliqué à l'IA (données personnelles dans les prompts/logs)
 - [ ] AI Act européen — grandes lignes, catégories de risque
 - [ ] Documentation type "model card" / "system card"
 - [ ] Audit trail — tracer qui a demandé quoi, quelle version de modèle a répondu
