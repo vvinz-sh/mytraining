@@ -67,6 +67,8 @@ morts complets du module.
 - [x] Batching de requêtes (dynamic batching, timeout)
 - [ ] Streaming de réponses
 
+TP prévu : conteneuriser le serveur MCP + scaling horizontal léger — idée notée dans `exercices/idees-tp-vague3.md`, design détaillé à venir.
+
 ### 2. Monitoring & évaluation
 - [ ] Logging structuré des requêtes/réponses d'un LLM en prod
 - [x] Recall@k et golden dataset (métrique RAG de base)
@@ -74,6 +76,8 @@ morts complets du module.
 - [x] Détection de drift (data drift, concept drift, causes identifiées : doc obsolète, vocabulaire, modèle managé, chunking incohérent)
 - [ ] Traçabilité/observabilité (LangSmith ou équivalent)
 - [ ] Alerting sur dégradation de qualité ou de performance
+
+TP prévu : golden dataset automatisé (recall@k + LLM-as-judge sur la faithfulness) — idée notée dans `exercices/idees-tp-vague3.md`, design détaillé à venir.
 
 ### 3. CI/CD & pipelines MLOps
 
@@ -83,6 +87,8 @@ morts complets du module.
 - [x] Tests automatisés spécifiques au ML (régression sur les sorties, pas juste tests de code classique)
 - [x] Déploiement progressif (canary, blue-green) appliqué à un modèle
 
+TP prévu : pipeline CI/CD sur le repo (GitHub Actions relançant indexation + golden dataset, échec du build si recall@k sous seuil) — idée notée dans `exercices/idees-tp-vague3.md`, design détaillé à venir.
+
 ### 4. Gouvernance & conformité
 
 - [x] RGPD appliqué à l'IA (données personnelles dans les prompts/logs)
@@ -91,13 +97,19 @@ morts complets du module.
 - [ ] Audit trail — tracer qui a demandé quoi, quelle version de modèle a répondu
 - [ ] Biais et équité (fairness) — angle gouvernance, pas ML pur
 
+TP prévu : rédiger une vraie "system card" pour le serveur `notes-formation` — idée notée dans `exercices/idees-tp-vague3.md`, design détaillé à venir.
+
 ### 5. Ingénierie de données pour le ML
 
-- [ ] Pipelines d'ingestion et de nettoyage de données (entraînement ou RAG)
+- [~] Pipelines d'ingestion et de nettoyage de données (entraînement ou RAG) — introduction posée (ETL déjà pratiqué via `index_notes.py`, pas encore de nettoyage/validation formalisés)
 - [ ] Versioning de données (DVC ou équivalent) — pourquoi une donnée doit être versionnée comme du code
 - [ ] Feature stores — concept, à quoi ça sert
-- [ ] Qualité et validation de données (détection d'anomalies, schémas)
+- [~] Qualité et validation de données (détection d'anomalies, schémas) — principe "fail loud vs silencieux" vu sur un vrai bug (fichier vide non détecté)
 - [ ] Cycle de vie de la donnée (rétention, suppression, lien avec RGPD)
+
+Notes : `notes/ingenierie-donnees/41-introduction-etl-validation-fail-loud.md`.
+
+TP prévu : versionner la base Chroma avec DVC — idée notée dans `exercices/idees-tp-vague3.md`, design détaillé à venir.
 
 ## Hors programme (approfondissements ponctuels)
 
