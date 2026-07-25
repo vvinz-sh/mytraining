@@ -97,16 +97,14 @@ Piège à éviter : sauter directement à la solution 4 ("il faut
 réentraîner le modèle") sans avoir vérifié la solution 1 (souvent la
 vraie cause).
 
+## Suite de cette note
+
+La mesure de la qualité de la réponse **générée** (par opposition aux
+documents récupérés) est traitée séparément dans
+`monitoring/35-faithfulness-groundedness-llm-as-judge.md`.
+
 ## À approfondir dans une prochaine session (pistes identifiées, non couvertes ici)
 
-- **Faithfulness / groundedness** — métrique différente du recall :
-  même si les bons documents sont récupérés, la réponse **générée**
-  reste-t-elle fidèle à ces documents, ou invente-t-elle des détails
-  (écho direct de l'hallucination) ? Se mesure automatiquement, pas
-  juste à l'œil.
-- **LLM-as-judge** — utiliser un LLM pour noter automatiquement les
-  réponses d'un système à grande échelle, plutôt que vérification
-  manuelle systématique.
 - **Observabilité / tracing** (LangSmith ou équivalent) — ce que
   contient concrètement une trace, comment suivre une requête à travers
   tout le pipeline RAG pour déboguer un cas précis.

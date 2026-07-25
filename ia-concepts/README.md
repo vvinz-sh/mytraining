@@ -70,7 +70,7 @@ morts complets du module.
 ### 2. Monitoring & évaluation
 - [ ] Logging structuré des requêtes/réponses d'un LLM en prod
 - [x] Recall@k et golden dataset (métrique RAG de base)
-- [ ] Faithfulness/groundedness (fidélité de la réponse générée aux documents)
+- [x] Faithfulness/groundedness (fidélité de la réponse générée aux documents)
 - [x] Détection de drift (data drift, concept drift, causes identifiées : doc obsolète, vocabulaire, modèle managé, chunking incohérent)
 - [ ] Traçabilité/observabilité (LangSmith ou équivalent)
 - [ ] Alerting sur dégradation de qualité ou de performance
