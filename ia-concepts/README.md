@@ -68,11 +68,11 @@ morts complets du module.
 - [ ] Latence/throughput : batching de requêtes, streaming de réponses
 
 ### 2. Monitoring & évaluation
-
 - [ ] Logging structuré des requêtes/réponses d'un LLM en prod
-- [ ] Métriques RAG concrètes (recall@k, faithfulness/groundedness, latence de recherche)
-- [ ] Détection de drift (données, comportement du modèle dans le temps)
-- [ ] Traçabilité/observabilité (LangSmith ou équivalent) — suivre une requête à travers tout le pipeline
+- [x] Recall@k et golden dataset (métrique RAG de base)
+- [ ] Faithfulness/groundedness (fidélité de la réponse générée aux documents)
+- [x] Détection de drift (data drift, concept drift, causes identifiées : doc obsolète, vocabulaire, modèle managé, chunking incohérent)
+- [ ] Traçabilité/observabilité (LangSmith ou équivalent)
 - [ ] Alerting sur dégradation de qualité ou de performance
 
 ### 3. CI/CD & pipelines MLOps
