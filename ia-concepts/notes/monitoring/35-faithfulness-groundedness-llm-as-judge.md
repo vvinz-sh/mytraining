@@ -56,6 +56,50 @@ humaine systématique — un signal statistiquement utile pour repérer des
 tendances de dégradation, sans jamais remplacer un audit humain ponctuel
 sur les cas les plus critiques.
 
+## Précision importante — faithfulness et groundedness ne sont pas strictement synonymes
+
+Session initiale : les deux termes ont été traités comme
+interchangeables. Reprise en debrief pour préciser la nuance réelle,
+vérifiée plutôt qu'assumée.
+
+### La nuance généralement admise
+
+Faithfulness désigne la véracité **globale** de la réponse par rapport
+à ses sources, tandis que groundedness se concentre sur la
+vérification de **chaque affirmation individuelle** par rapport aux
+documents récupérés, à un niveau plus granulaire. Perspective contenu
+(faithfulness — "est-ce que la réponse dit vraiment ce que disent les
+documents") vs perspective source (groundedness — "chaque affirmation
+a-t-elle un fondement traçable").
+
+### Une deuxième nuance, mesurable — continu vs binaire
+
+Certaines sources vont plus loin sur une différence concrète de
+calcul : la faithfulness est généralement un **score continu** (0 à 1,
+proportion d'affirmations soutenues par le contexte), utile pour suivre
+des tendances et détecter des régressions progressives — alors que la
+groundedness est parfois traitée comme un **contrôle binaire**
+(chaque affirmation a une source, oui/non), un filtre plus strict mais
+moins nuancé pour repérer des hallucinations partielles.
+
+### Ce que ça implique en pratique
+
+Dans les frameworks réels (RAGAS, DeepEval), la faithfulness est
+généralement calculée en **extrayant les affirmations une par une et en
+vérifiant chacune contre le contexte** (donc une étape claim-par-claim,
+comme la groundedness), puis en **agrégeant** le résultat en un score
+continu. Les deux mécanismes ne sont donc pas complètement séparés dans
+l'implémentation — la faithfulness "contient" souvent une étape de
+vérification à la granularité de la groundedness.
+
+### ⚠️ Honnêteté sur le consensus — pas une distinction universelle
+
+Cette nuance n'est **pas standardisée partout** — plusieurs frameworks
+et articles utilisent les deux termes comme synonymes stricts, sans
+cette distinction. Utile pour comprendre une nuance quand un auteur la
+fait explicitement, mais pas une règle gravée dans le marbre à
+appliquer systématiquement.
+
 ## Résumé — deux métriques, deux étapes du pipeline
 
 | Métrique | Étape mesurée | Détecte |
