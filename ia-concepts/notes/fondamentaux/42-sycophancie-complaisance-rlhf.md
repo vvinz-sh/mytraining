@@ -90,7 +90,52 @@ cohérents chez le modèle (tantôt trop conciliant, tantôt trop buté) —
 c'est un système sans confiance calibrée, dont la réaction dépend
 fortement du contexte précis du prompt, pas d'un principe stable.
 
-## Récap des quatre modes d'échec observés dans une seule session de test
+## Cinquième mode observé : biais de prior sur signal affaibli (contexte long)
+
+Contexte différent des précédents : pas une session ludique, mais le
+test de baseline du TP `tp-llm-local` Phase 2 (avant fine-tuning
+QLoRA). `qwen3:8b` analyse un vrai log d'incident de 520 lignes
+(saturation disque en cascade, `tp-ansible-agent`) et doit produire un
+résumé structuré en 5 champs.
+
+**Résultat** : diagnostic complètement à côté — "attaque par force
+brute SSH", alors que l'incident réel est une saturation de `/var` par
+un job de sauvegarde, provoquant l'échec en cascade d'Apache. Aucune
+mention du disque ou de l'espace disque dans la réponse.
+
+**Mécanisme, combinaison de deux phénomènes distincts** :
+
+1. **"Lost in the middle"** — biais positionnel documenté chez les
+   LLM sur contexte long : le contenu en tout début et toute fin d'un
+   texte est mieux exploité que celui du "milieu". Ici, la vraie cause
+   racine (lignes ~21-30/520, donc plutôt en début) s'est retrouvée
+   affaiblie dans l'attention du modèle malgré sa position pourtant
+   précoce — signe que la capacité d'attention à longue portée d'un
+   petit modèle 8B peut être plus limitée que ce que le "lost in the
+   middle" classique décrit sur des modèles plus gros.
+
+2. **Biais de prior hérité du pré-entraînement** — une fois le signal
+   réel affaibli, le modèle ne répond pas "je ne sais pas" : il
+   retombe sur l'association la plus statistiquement familière dans
+   son corpus d'entraînement pour les bribes encore visibles
+   ("connexions SSH répétées + erreurs de service" = un sujet très
+   représenté dans la littérature sécurité/sysadmin sur le web),
+   même si cette explication ne colle pas au reste du log.
+
+**Différence avec l'overfitting** : à ce stade, le modèle n'a subi
+*aucun* entraînement de notre part — l'overfitting suppose un écart
+entre données d'entraînement et données de test, qui ne s'applique pas
+ici puisqu'on est en pure inférence sur le modèle de base. Le biais
+observé vient du pré-entraînement initial de Qwen, pas d'un fine-tuning
+qu'on n'a pas encore fait.
+
+**Portée méthodologique** : ce résultat de baseline (avant QLoRA) sert
+justement de point de comparaison — la Phase 2 permettra de vérifier
+si le fine-tuning sur des exemples variés corrige spécifiquement ce
+type d'erreur (signal affaibli + bascule vers un prior familier mais
+faux), ou si le problème persiste malgré l'entraînement.
+
+## Récap des cinq modes d'échec observés dans une seule session de test
 
 | Mode d'échec | Déclencheur | Exemple observé |
 |---|---|---|
@@ -98,7 +143,8 @@ fortement du contexte précis du prompt, pas d'un principe stable.
 | Connaissance figée dans le temps | Fait absent/rare dans les données d'entraînement | Créateur de Claude — deux réponses fausses différentes |
 | Sycophancie | Pression sociale (doute exprimé) | Abandonne "Anthropic" (correct) face à "certain de cette réponse ?" |
 | Dégénérescence par répétition | Génération longue + rareté linguistique (français) | Boucle sur "Cocodémon" x151, refuse de se corriger |
+| Biais de prior sur signal affaibli | Contexte long + signal réel dilué (lost in the middle) | "Attaque SSH" diagnostiquée à la place d'une saturation disque réelle |
 
-Point commun aux quatre : **le ton de confiance n'a jamais été un
+Point commun aux cinq : **le ton de confiance n'a jamais été un
 indicateur fiable** — ni pour détecter l'erreur, ni pour valider une
 correction.
