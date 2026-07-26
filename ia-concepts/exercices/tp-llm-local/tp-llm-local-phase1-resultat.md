@@ -148,6 +148,61 @@ Résultat :
 - Usage d'un LLM local sur une tâche sysadmin concrète (analyse de log
   système), avec esprit critique sur la fiabilité du diagnostic proposé
 
+## Debrief — questions posées après les tests
+
+### Comment détecter un dépassement de contexte, sans que ça échoue silencieusement ?
+
+Par défaut, Ollama ne montre rien : quand le nombre de tokens dépasse
+la longueur de contexte, il supprime silencieusement les messages/le
+début du prompt, et le seul log existant est au niveau `Debug` — donc
+invisible en usage normal (un ticket est d'ailleurs ouvert sur le repo
+officiel pour se plaindre que ce n'est pas assez visible sans activer
+le debug complet).
+
+Pour le voir concrètement :
+
+```bash
+OLLAMA_DEBUG=1 ollama serve
+```
+
+Avec ce flag, une ligne apparaît dans les logs au moment du
+dépassement : `msg="truncating input prompt" limit=4096 prompt=8942
+keep=4 new=4096` — exactement ce qui se serait affiché lors du test
+"Carapuce" avec 50 paragraphes, si le debug avait été activé avant.
+
+**Piège de portabilité à retenir** : le `default_num_ctx` n'est pas
+une valeur fixe — Ollama l'ajuste automatiquement selon la mémoire
+disponible de la machine. Un script/agent qui tourne sans troncature
+sur une machine avec beaucoup de VRAM peut se mettre à tronquer
+silencieusement le même contenu sur une machine plus modeste (contexte
+par défaut plus petit), sans qu'aucune erreur ne le signale.
+
+### Comment monitorer les stats (tokens consommés) ?
+
+Via le CLI, le flag `--verbose` affiche un résumé après chaque
+réponse (temps de chargement, tokens du prompt, tokens générés,
+tokens/seconde) :
+
+```bash
+ollama run llama3.1:8b --verbose
+```
+
+Via l'API, chaque réponse JSON contient nativement deux champs
+exploitables pour du monitoring : `prompt_eval_count` (tokens du
+prompt) et `eval_count` (tokens générés).
+
+### Peut-on étendre ce TP pour que le modèle utilise le MCP `notes-formation` ?
+
+Oui, faisable en TP séparé plus tard. Ollama supporte le **tool
+calling** nativement via son API (format compatible OpenAI) pour les
+modèles qui le permettent, dont Llama 3.1. Le protocole MCP décrit les
+outils différemment — il faudrait un petit pont logiciel traduisant
+les outils MCP (comme `notes-formation`) vers le format `tools`
+attendu par l'API Ollama, puis relayant les appels. C'est le même rôle
+que joue Claude Desktop actuellement, en version maison simplifiée.
+Panorama des ponts communautaires existants à faire avant de coder,
+même logique que pour le TP git.
+
 ## Prochaine étape
 
 Phase 2 — fine-tuning QLoRA avec Unsloth sur `qwen3:8b`, dataset
