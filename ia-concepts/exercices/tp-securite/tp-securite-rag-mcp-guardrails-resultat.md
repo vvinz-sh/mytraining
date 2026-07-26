@@ -137,6 +137,21 @@ pourrait réellement différer** selon la métrique, pas juste l'affichage
 numérique. Point non vérifié dans cette itération, mais un argument de
 plus en faveur d'un futur test avec cosinus + `normalize_embeddings=True`.
 
+Vérification faite après coup avec `numpy.linalg.norm()` sur un
+embedding réel de `all-MiniLM-L6-v2` : **norme = 1.0** — les vecteurs
+sont bien normalisés. Recherche complémentaire : ce modèle intègre un
+module `Normalize` directement dans son pipeline (`modules.json`,
+`sentence_transformers.models.Normalize`, appliqué après le pooling) —
+la normalisation est donc figée dans l'architecture du modèle
+lui-même, pas contrôlée par le paramètre `normalize_embeddings` de
+`.encode()` (qui ne change rien pour ce modèle précis).
+
+**Conclusion tranchée** : passer à `metadata={"hnsw:space": "cosine"}`
+n'aurait changé **aucun résultat** du guardrail — uniquement rendu les
+distances plus lisibles à l'œil (proches de 0). La question laissée
+ouverte en debrief est donc résolue : pure question de lecture dans ce
+cas précis, pas un vrai risque fonctionnel.
+
 **Piste d'amélioration non testée** : configurer explicitement la
 métrique cosinus à la création des collections
 (`metadata={"hnsw:space": "cosine"}`) donnerait des distances plus
