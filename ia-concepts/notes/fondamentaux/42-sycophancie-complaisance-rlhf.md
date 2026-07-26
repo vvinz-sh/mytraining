@@ -54,14 +54,51 @@ qui, concrètement, justifie ce changement ?" — si la réponse est
 "rien de nouveau, juste mon insistance", c'est un signal d'alarme, pas
 une validation.
 
-## Récap des trois modes d'échec observés dans une seule session de test
+## Quatrième mode observé : dégénérescence par répétition
+
+Test ultérieur (toujours en session ludique) : demander à `qwen3:8b`
+de réciter les 151 Pokémon de la 1re génération, en français. Résultat
+au-delà d'un certain point : le modèle se bloque sur un seul nom
+inventé ("Cocodémon", type "Serpent") répété en boucle jusqu'à la fin
+de la liste (151 fois), tout en refusant d'admettre l'erreur quand
+challengé.
+
+**Mécanisme** : différent des trois précédents. Ce n'est ni une
+hallucination isolée, ni de la sycophancie — c'est de la
+**dégénérescence par répétition** (parfois appelée "repetition trap") :
+plus un modèle génère un texte long, plus chaque token généré
+influence fortement la prédiction du suivant. Le modèle peut se
+retrouver piégé dans une boucle où répéter le token précédent devient
+statistiquement "la suite la plus plausible" du texte qu'il vient
+lui-même de produire — un effet qui s'aggrave avec la longueur de la
+génération, surtout sur un petit modèle avec moins de garde-fous
+internes.
+
+**Le lien avec la langue n'est pas un hasard** : les noms Pokémon
+localisés en français sont beaucoup moins représentés dans les données
+d'entraînement que les noms anglais (contenu à poids largement
+anglophone). Le modèle a assez de matière pour bien démarrer, puis
+s'effondre dès qu'il manque de connaissance solide — et comble le vide
+en répétant un nom plausible plutôt que d'admettre l'incertitude ou de
+varier ses inventions.
+
+**Point intéressant, presque contradictoire avec le mode 3** : ici, le
+modèle **campe sur une erreur évidente** au lieu de céder face à la
+contestation — l'inverse de la sycophancie observée plus haut. Ça
+confirme que ces comportements ne sont pas des "traits de caractère"
+cohérents chez le modèle (tantôt trop conciliant, tantôt trop buté) —
+c'est un système sans confiance calibrée, dont la réaction dépend
+fortement du contexte précis du prompt, pas d'un principe stable.
+
+## Récap des quatre modes d'échec observés dans une seule session de test
 
 | Mode d'échec | Déclencheur | Exemple observé |
 |---|---|---|
 | Hallucination pure | Vide de connaissance (mot inventé) | Invente une fiche Pokémon complète pour "Caparaïce" |
 | Connaissance figée dans le temps | Fait absent/rare dans les données d'entraînement | Créateur de Claude — deux réponses fausses différentes |
 | Sycophancie | Pression sociale (doute exprimé) | Abandonne "Anthropic" (correct) face à "certain de cette réponse ?" |
+| Dégénérescence par répétition | Génération longue + rareté linguistique (français) | Boucle sur "Cocodémon" x151, refuse de se corriger |
 
-Point commun aux trois : **le ton de confiance n'a jamais été un
+Point commun aux quatre : **le ton de confiance n'a jamais été un
 indicateur fiable** — ni pour détecter l'erreur, ni pour valider une
 correction.
