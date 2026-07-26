@@ -115,12 +115,51 @@ Script `generer_dataset_entrainement.py` :
 `dataset_entrainement.json`. Répartition vérifiée via `verif_dataset.py` :
 parfaitement équilibrée, 28 exemples par type sur les 18 types.
 
+### Conversion au format Unsloth
+
+Format Alpaca (instruction/input/output) écarté au profit d'un format
+**conversationnel** (ChatML/ShareGPT) — recommandé pour les modèles
+Instruct comme `qwen3:8b`, contrairement aux modèles de base qui
+utilisent plutôt Alpaca.
+
+Décision prise de ne pas suivre la recommandation Unsloth de mix
+75% raisonnement / 25% non-raisonnement pour préserver la capacité de
+raisonnement de Qwen3 — jugée non prioritaire vu la faiblesse déjà
+observée du modèle sur ce point (cf. note 42) et la nature de la tâche
+(extraction structurée, pas de raisonnement visible attendu en sortie).
+
+Script `convertir_dataset_unsloth.py` : reformate chaque exemple en
+deux tours (`user` = log + consigne, `assistant` = JSON de résumé),
+consigne systématiquement placée **après** le log — même correction
+que celle apprise sur le cas de test disque plein, appliquée par
+précaution à l'ensemble du dataset même si les logs d'entraînement
+sont bien plus courts (30-80 lignes).
+
+Vérification post-conversion : 504/504 exemples valides (structure
+`conversations` correcte, 5 champs exacts dans chaque réponse
+assistant, consigne bien en fin de prompt) — `dataset_entrainement_chatml.json`
+prêt pour l'entraînement.
+
+### Rappel — rôle de QLoRA et Unsloth dans ce TP
+
+**QLoRA** : le modèle de base est gelé et quantifié en 4-bit (comme en
+Phase 1), seuls de petits adaptateurs LoRA (quelques millions de
+paramètres greffés sur certaines couches) sont réellement entraînés —
+ce qui rend le fine-tuning possible sur 8 Go de VRAM plutôt que
+d'exiger un ré-entraînement complet du modèle.
+
+**Unsloth** : optimise l'exécution de ce processus (kernels GPU
+réécrits, gestion mémoire plus efficace) sans changer les principes
+de QLoRA — entraînement plus rapide et moins gourmand en VRAM pour un
+résultat équivalent.
+
+**Objectif du TP** : vérifier si l'entraînement sur les 504 exemples
+corrige les erreurs observées en baseline, en particulier le biais de
+prior sur le cas disque plein (5e mode d'échec, note 42).
+
 ## Prochaine étape
 
-Vérifier le format de dataset attendu par Unsloth (structure
-instruction/input/output ou conversationnel), convertir
-`dataset_entrainement.json` en conséquence, puis configurer et lancer
-l'entraînement QLoRA proprement dit.
+Configurer et lancer l'entraînement QLoRA proprement dit.
 
 ## Compétences pratiquées jusqu'ici
 
