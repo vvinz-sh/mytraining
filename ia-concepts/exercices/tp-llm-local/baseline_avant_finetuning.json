@@ -1,0 +1,46 @@
+[
+  {
+    "cas": 0,
+    "reference": {
+      "type_incident": "Crash en boucle d'un service applicatif suite à des OOM kills répétés",
+      "cause_racine": "Consommation mémoire excessive du processus Java (heap proche de la limite -Xmx, GC incapable de libérer suffisamment de mémoire) entraînant l'intervention répétée de l'oom-killer du noyau",
+      "symptome_observe": "Le processus java-app est tué par le kernel (signal 9/KILL) plusieurs fois de suite, avec des warnings de heap à 89-95% juste avant chaque crash ; systemd redémarre le service à chaque fois jusqu'à atteindre la limite de redémarrages rapprochés (StartLimitBurst), provoquant un échec définitif du service et des erreurs 502 côté nginx/kube-probe",
+      "service_affecte": "java-app.service (Order Processing Application)",
+      "action_recommandee": "Augmenter la mémoire disponible ou ajuster les paramètres JVM (-Xmx, -Xms), analyser un éventuel memory leak via heap dump, configurer un oom_score_adj adapté, revoir les limites de restart de systemd (RestartSec, StartLimitIntervalSec, StartLimitBurst) et ajouter du monitoring proactif sur l'usage mémoire"
+    },
+    "reponse_qwen_brute": "{\n  \"type_incident\": \"OOM (Out-Of-Memory) Kill\",\n  \"cause_racine\": \"La mémoire heap de l'application Java est surexploitée (91-95% d'utilisation), entraînant des pauses GC prolongées et un dépassement des limites de mémoire système.\",\n  \"symptome_observe\": \"L'application Java est régulièrement tuée par le oom-killer, avec des tentatives de redémarrage rapides échouant en raison du délai de cooldown de systemd.\",\n  \"service_affecte\": \"java-app.service - Order Processing Application\",\n  \"action_recommandee\": \"Ajuster les paramètres JVM (-Xmx, -Xms) pour limiter l'utilisation de la mémoire, optimiser les traitements de batch, et surveiller les métriques de mémoire en temps réel.\"\n}"
+  },
+  {
+    "cas": 1,
+    "reference": {
+      "type_incident": "Panne réseau / résolution DNS et connexions sortantes bloquées",
+      "cause_racine": "Règle iptables OUTPUT en politique DROP bloquant tout le trafic sortant, empêchant les requêtes DNS (port 53) et les connexions vers les services externes (base de données, API tierces)",
+      "symptome_observe": "Erreurs 'Name or service not known', 'Could not resolve host', 'Temporary failure in name resolution' sur plusieurs services (app, curl, wget, dig), échec de systemd-resolved à joindre les serveurs DNS, application entrant en mode dégradé",
+      "service_affecte": "systemd-resolved, application principale (connexion base de données), tâches cron (sync_prices.sh), commandes réseau sortantes (curl, wget, dig)",
+      "action_recommandee": "Vérifier et corriger les règles iptables (flush de la chaîne OUTPUT ou ajout d'une règle ACCEPT pour DNS/HTTPS), redémarrer systemd-resolved, valider la restauration de la connectivité DNS et surveiller les logs applicatifs pour confirmer la reprise normale"
+    },
+    "reponse_qwen_brute": "{\n  \"type_incident\": \"DNS Resolution Failure\",\n  \"cause_racine\": \"iptables OUTPUT chain DROP rules are blocking DNS queries (UDP/53) and causing DNS server unreachable errors\",\n  \"symptome_observe\": \"Multiple 'Name or service not known' errors for api.stripe.com, registry.npmjs.org, db.internal.example.com; NXDOMAIN errors; DNS server unreachable warnings; curl and application connection failures\",\n  \"service_affecte\": \"Application database connectivity (db.internal.example.com), external API integrations (stripe.com/npmjs.org), and system DNS resolution\",\n  \"action_recommandee\": \"Audit iptables OUTPUT chain rules to allow UDP/53 traffic; verify /etc/resolv.conf configuration; check DNS server availability (8.8.8.8) and network connectivity\"\n}"
+  },
+  {
+    "cas": 2,
+    "reference": {
+      "type_incident": "Authentification échouée par désynchronisation cache SSSD/LDAP",
+      "cause_racine": "Le backend SSSD LDAP_CORP est passé hors ligne (timeouts TCP/TLS vers ldaps://ldap-corp.internal:636) pendant environ 10 minutes, ce qui a bloqué le rafraîchissement du cache sysdb et laissé des entrées utilisateurs périmées, alors que ces utilisateurs existaient bien et étaient accessibles via ldapsearch direct",
+      "symptome_observe": "Plusieurs utilisateurs valides (mmartin, sconnard, tleroy, pboucher, vgirard) obtiennent des erreurs 'cache lookup returned no results' lors des tentatives SSH, alors qu'une requête ldapsearch manuelle confirme leur existence dans l'annuaire LDAP",
+      "service_affecte": "sssd (authentification centralisée) et sshd (accès distant)",
+      "action_recommandee": "Vérifier la connectivité et les certificats TLS vers le serveur LDAP, forcer un sss_cache -E pour invalider le cache périmé, surveiller les timeouts de connexion sdap_id_op_connect_done et envisager d'ajuster offline_timeout ainsi que la configuration du pool de connexions TLS pour éviter la désynchronisation du cache"
+    },
+    "reponse_qwen_brute": "{\n  \"type_incident\": \"LDAP SSL/TLS Configuration Failure\",\n  \"cause_racine\": \"Hostname mismatch in SSL certificate (CN does not match ldap-corp.internal) combined with LDAP server unreachability\",\n  \"symptome_observe\": \"Repeated failed SSH login attempts, LDAP connection timeouts, stale user cache entries, and SSL handshake failures\",\n  \"service_affecte\": \"LDAP authentication via sssd (systemd, sshd, and user session management)\",\n  \"action_recommandee\": \"1. Validate SSL certificate CN matches ldap-corp.internal\\n2. Check LDAP server availability and network connectivity to port 636\\n3. Clear sssd cache and restart service\\n4. Verify TLS configuration for hostname verification\"\n}"
+  },
+  {
+    "cas": 3,
+    "reference": {
+      "type_incident": "Saturation d'espace disque système (filesystem full) entraînant des échecs en cascade",
+      "cause_racine": "Le job de sauvegarde nocturne (backup-job) a rempli le système de fichiers /var en écrivant une archive volumineuse (45GB puis 62GB), provoquant l'épuisement total de l'espace disque disponible sur la partition /var",
+      "symptome_observe": "Avertissement EXT4 espace faible (2% restant), puis erreurs EXT4 'No space left on device' et 'filesystem full', échec du backup-job avec fichier archive incomplet laissé sur le disque, échec répété du démarrage d'Apache httpd (impossible de bind sur ports 80/443, redémarrages en boucle puis arrêt car trop rapprochés), échecs de Postfix (impossible de se connecter au transport 'error', échec d'ouverture des fichiers de queue), et échecs d'envoi de mails par cron (status 0x0100)",
+      "service_affecte": "Système de fichiers /var, service Apache HTTP Server (httpd), service de messagerie Postfix, notifications cron par mail, service de sauvegarde (backup-job)",
+      "action_recommandee": "Libérer immédiatement de l'espace sur /var en supprimant l'archive de backup incomplète et les anciens fichiers de logs/backups, augmenter la capacité de la partition /var ou déplacer les sauvegardes vers un volume dédié, mettre en place une surveillance proactive de l'espace disque avec seuils d'alerte, redémarrer les services httpd et postfix après résolution de l'espace disque, et revoir la politique de rétention des sauvegardes pour éviter une récidive"
+    },
+    "reponse_qwen_brute": "{\n  \"type_incident\": \"Attaque de force brute (SSH)\",\n  \"cause_racine\": \"Tentatives répétées de connexion SSH depuis une même adresse IP (192.168.56.1)\",\n  \"symptome_observe\": \"Connexions SSH répétées et erreurs postfix liées à un fichier de transport manquant\",\n  \"service_affecte\": \"sshd et postfix\",\n  \"action_recommandee\": \"Bloquer l'IP 192.168.56.1 via un pare-feu, vérifier la configuration de postfix pour le transport et les fichiers de queue, et surveiller les activités SSH.\"\n}"
+  }
+]
