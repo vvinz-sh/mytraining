@@ -207,16 +207,16 @@ devient pénible.
 ## Ce qu'il reste à faire concrètement (checklist)
 
 - [x] Cloner `mytraining` en natif dans `/home/vinz/mytraining`
-- [ ] Créer le groupe `code` et l'utilisateur `mcp-git`, l'ajouter au
+- [x] Créer le groupe `code` et l'utilisateur `mcp-git`, l'ajouter au
       groupe, poser les permissions (lecture seule + écriture `.git`)
-- [ ] Générer une clé SSH dédiée pour `mcp-git`
-- [ ] Ajouter cette clé comme deploy key GitHub (lecture/écriture,
+- [x] Générer une clé SSH dédiée pour `mcp-git`
+- [x] Ajouter cette clé comme deploy key GitHub (lecture/écriture,
       limitée à ce repo)
-- [ ] `pip install mcp-server-git --break-system-packages` dans
+- [x] `pip install mcp-server-git --break-system-packages` dans
       `.py3`
-- [ ] Écrire `serveur_mcp_git_push.py` (code ci-dessus)
-- [ ] Mettre à jour `claude_desktop_config.json`
-- [ ] Tester le cas positif (preview → token → confirm → vérifier sur
+- [x] Écrire `serveur_mcp_git_push.py` (code ci-dessus)
+- [x] Mettre à jour `claude_desktop_config.json`
+- [x] Tester le cas positif (preview → token → confirm → vérifier sur
       GitHub) et le cas négatif (confirm avec un mauvais token, ou
       après un nouveau commit entre-temps → doit être refusé)
 
