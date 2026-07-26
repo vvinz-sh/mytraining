@@ -1,6 +1,6 @@
 # TP — Serveur MCP perso pour committer sur `mytraining` (draft)
 
-Statut : **design posé, pas encore exécuté**. TP hors programme, né
+Statut : **design complet, pas encore exécuté**. TP hors programme, né
 d'une discussion sur la modification manuelle de `notes/gouvernance/36-...md`
 — pas rattaché à une catégorie vague 3 unique (touche à la fois
 écosystème d'outils MCP, automatisation git/CI, et sécurité d'accès).
@@ -12,64 +12,226 @@ Un serveur MCP perso permettant à Claude Desktop de faire `git add`,
 pour fermer la boucle : modifier une note en discussion → la voir
 committée sans repasser par Obsidian Git manuellement.
 
-## Étape 0 — Panorama des solutions existantes (avant d'écrire quoi que ce soit)
+## Étape 0 — Panorama des solutions existantes (fait)
 
-Ne pas réinventer la roue : recenser d'abord ce qui existe.
+Trois options recensées avant tout code :
 
-- Serveur MCP **git** officiel/communautaire (écosystème
-  `modelcontextprotocol/servers`) — vérifier s'il couvre déjà
-  add/commit/push ou seulement lecture (log, diff, status)
-- Serveur MCP **filesystem** générique — souvent en lecture/écriture
-  fichier mais sans notion de commit git
-- Comparer sur : scope des opérations couvertes, granularité des
-  permissions (whitelist de chemins ?), maintenance active,
-  configuration nécessaire (`claude_desktop_config.json`)
+1. **Serveur officiel `mcp-server-git`** (`modelcontextprotocol/servers`,
+   Python/GitPython, `uvx` ou pip) — douze outils : `git_status`,
+   `git_diff_unstaged`, `git_diff_staged`, `git_diff`, `git_commit`,
+   `git_add`, `git_reset`, `git_log`, `git_create_branch`,
+   `git_checkout`, `git_show`, `git_branch`. Maintenu par le groupe MCP
+   officiel. **Ne couvre volontairement pas le push** (choix de
+   sécurité probable : n'expose que des opérations locales
+   réversibles).
+2. **Forks communautaires** (`@cyanheads/git-mcp-server`, etc.) —
+   couvrent push/pull/merge/rebase/stash, mais surface bien plus large
+   que nécessaire et maintenance individuelle, pas d'un groupe officiel.
+3. **Serveur GitHub officiel** (`@modelcontextprotocol/server-github`)
+   — passe par l'API GitHub (token PAT) plutôt que git local, pertinent
+   pour issues/PR, pas pour ce besoin précis.
 
-Critère de décision : si un serveur existant couvre add/commit/push
-avec un contrôle d'accès suffisant → l'utiliser tel quel. Sinon →
-justifier pourquoi un serveur custom en FastMCP (comme pour
-`tp-rag-mcp/`) est nécessaire, et sur quel point précis l'existant est
-insuffisant.
+**Décision** : serveur officiel `mcp-server-git` pour add/commit/status/
+diff/log (déjà audité, couvre le besoin) + un serveur custom minimal
+perso limité à un seul outil manquant : le push. Écarte les forks
+communautaires au nom du moindre privilège (pas de merge/rebase/stash
+inutiles exposés).
 
-## Étape 1 — Scope et permissions
+## Étape 1 — Conception du serveur custom `git-push-perso`
 
-- Racine unique autorisée : le repo `mytraining` (pas le reste du
-  système de fichiers WSL)
-- Confirmer si `push` doit être automatique après commit, ou nécessiter
-  une validation explicite dans la conversation avant chaque push
-  (repasse par le principe de moindre privilège vu dans le TP sécurité)
+### Principe : deux fonctions, pas une
 
-## Étape 2 — Implémentation (si aucun serveur existant ne convient)
+- `git_push_preview(repo_path)` — lecture seule, ne peut physiquement
+  rien casser même appelée par erreur ou à répétition
+- `git_push_confirm(repo_path, token)` — exécute le push réel,
+  **uniquement** si le token fourni correspond à l'état réel du dépôt
+  recalculé au moment de l'appel
 
-- Outils exposés : `git_status`, `git_diff`, `git_add`, `git_commit`,
-  `git_push` — un outil par opération plutôt qu'un outil générique
-  `run_git_command` (surface d'attaque plus large si le serveur exécute
-  n'importe quelle commande git passée en argument)
-- Réutiliser la structure FastMCP du TP RAG/MCP comme base
+### Le problème de la docstring seule (identifié en discussion)
 
-## Étape 3 — Test
+Une docstring du type *"n'appeler qu'après validation"* est une
+indication pour Claude, pas une protection technique — rien
+n'empêche techniquement l'appel direct à `git_push_confirm`. La
+vraie protection doit venir de la conception du code, pas du
+commentaire.
 
-- Cas positif : modifier une note (ex : ajout du point Article 5 sur
-  `36-...md`), demander le commit via Claude Desktop, vérifier
-  l'apparition sur GitHub
-- Cas limite à tester : tentative de commit hors du dossier `mytraining`
-  — doit être bloquée
+### Mécanisme du token
 
-## Ce qu'il faudra vérifier/clarifier en codant
+- Basé sur le **hash des commits à pousser** (`repo.iter_commits("@{u}..")`),
+  jamais sur le texte complet du `status --short` (qui inclurait des
+  fichiers non suivis sans rapport, faussant la comparaison)
+- Calculé par une fonction interne partagée `_commits_a_pousser()`,
+  appelée indépendamment par `preview` (pour l'affichage) et par
+  `confirm` (pour la vérification) — jamais l'une ne fait confiance au
+  résultat mémorisé de l'autre
+- `confirm` **recalcule** l'état réel à l'instant T et compare — si
+  un commit a été ajouté entre l'aperçu et la confirmation, le token
+  ne correspond plus, et le push est refusé avec message explicite
 
-- Faut-il un `.gitignore` ou une whitelist explicite pour éviter de
-  committer des fichiers indésirables (config locale, cache Python) ?
-- Gestion des credentials git (SSH agent WSL2 déjà configuré ou à
-  vérifier) pour que le `push` fonctionne sans intervention manuelle
+### Limite assumée (pas une faille à corriger)
+
+Si le serveur officiel `mcp-server-git` est connecté en parallèle,
+Claude a accès à `git_log` et pourrait en théorie reconstruire le
+token sans jamais appeler `git_push_preview`. Le token protège contre
+l'appel à l'aveugle ou le push d'un état non vérifié, mais ne remplace
+pas une confirmation humaine explicite pour une action aussi sensible
+qu'un push — compromis assumé pour ce TP.
+
+### Décisions de conception validées
+
+- Pas de `remote`/`branch` explicites : upstream déduit par défaut
+- Pas d'option `--force` : absente du code, pas juste inutilisée
+- Flux obligatoire : preview → (validation humaine dans la
+  conversation) → confirm
+
+## Étape 2 — Code
+
+```python
+# serveur_mcp_git_push.py
+from fastmcp import FastMCP
+import git  # GitPython — la même lib que le serveur officiel mcp-server-git
+import hashlib
+
+mcp = FastMCP("git-push-perso")
+
+def _commits_a_pousser(repo_path: str) -> list[str]:
+    """Fonction interne partagée — la SEULE source de vérité sur ce
+    qu'il y a à pousser. Appelée par preview ET confirm séparément."""
+    repo = git.Repo(repo_path)
+    return [c.hexsha for c in repo.iter_commits("@{u}..")]
+
+def _token(hashes: list[str]) -> str:
+    """Condense la liste de hash en un seul token comparable."""
+    return hashlib.sha256("".join(hashes).encode()).hexdigest()
+
+@mcp.tool()
+def git_push_preview(repo_path: str) -> str:
+    """Montre ce qui serait poussé, sans rien modifier. Retourne aussi
+    un token à fournir tel quel à git_push_confirm."""
+    hashes = _commits_a_pousser(repo_path)
+    if not hashes:
+        return "Rien à pousser : la branche locale est à jour avec le remote."
+
+    repo = git.Repo(repo_path)
+    resume = f"{len(hashes)} commit(s) à pousser :\n"
+    for h in hashes:
+        resume += f"- {h[:7]} : {repo.commit(h).summary}\n"
+    resume += f"\nToken à utiliser pour confirmer : {_token(hashes)}"
+    return resume
+
+@mcp.tool()
+def git_push_confirm(repo_path: str, token: str) -> str:
+    """Exécute le push réel — uniquement si le token correspond
+    exactement à ce qui serait poussé À CE MOMENT PRÉCIS (recalcul, pas
+    de confiance dans une valeur mémorisée)."""
+    hashes_actuels = _commits_a_pousser(repo_path)
+    if _token(hashes_actuels) != token:
+        return ("Refusé : l'état du dépôt a changé depuis l'aperçu "
+                "(nouveau commit, ou plus rien à pousser). "
+                "Relance git_push_preview.")
+
+    repo = git.Repo(repo_path)
+    resultat = repo.remote(name="origin").push()
+    return f"Push effectué : {resultat[0].summary if resultat else 'OK'}"
+
+if __name__ == "__main__":
+    mcp.run()
+```
+
+## Étape 3 — Architecture système retenue
+
+### Deux clones distincts (pas de partage réseau entre les deux)
+
+Cause du choix : Obsidian (Electron) ne peut pas ouvrir un vault via
+`\\wsl.localhost\...` — bug documenté, `fs.watch` incompatible avec le
+système de fichiers réseau 9P utilisé par ce partage. Contournement
+retenu : deux clones séparés plutôt qu'un chemin réseau partagé.
+
+- `/mnt/c/Users/Vinz/Documents/mytraining` (Windows) — Obsidian Git,
+  usage humain occasionnel
+- `/home/vinz/mytraining` (natif WSL2 Linux) — serveurs MCP, usage
+  automatisé/fréquent
+
+⚠️ **Discipline manuelle requise** : `git pull` sur le clone concerné
+avant toute session d'écriture, dans un sens comme dans l'autre, pour
+éviter une divergence silencieuse. À automatiser plus tard si ça
+devient pénible.
+
+### Utilisateur système dédié `mcp-git`
+
+- Membre du groupe `code` (owner `vinz:code` sur le repo natif)
+- Lecture seule sur les fichiers du repo, écriture sur `.git`
+  uniquement (suffisant : `git add`/`git commit` n'écrivent que dans
+  `.git/index` et `.git/objects`, jamais dans les fichiers de travail)
+- Extensible plus tard vers du rw groupe si des fonctions plus
+  avancées (modification directe de fichiers) sont ajoutées
+- Clé SSH dédiée (pas celle de `vinz`), ajoutée comme **deploy key**
+  GitHub en lecture/écriture, limitée à ce seul repo
+
+## Étape 4 — Configuration `claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "notes-formation": {
+      "command": "wsl.exe",
+      "args": [
+        "-d", "Ubuntu24",
+        "/home/vinz/.py3/bin/python3",
+        "/mnt/c/Users/Vinz/Documents/mytraining/ia-concepts/exercices/tp-rag-mcp/serveur_mcp_notes.py"
+      ]
+    },
+    "git": {
+      "command": "wsl.exe",
+      "args": [
+        "-d", "Ubuntu24",
+        "-u", "mcp-git",
+        "/home/vinz/.py3/bin/python3",
+        "-m", "mcp_server_git",
+        "--repository", "/home/vinz/mytraining"
+      ]
+    },
+    "git-push-perso": {
+      "command": "wsl.exe",
+      "args": [
+        "-d", "Ubuntu24",
+        "-u", "mcp-git",
+        "/home/vinz/.py3/bin/python3",
+        "/home/vinz/mytraining/ia-concepts/exercices/tp-mcp-git-repo/serveur_mcp_git_push.py"
+      ]
+    }
+  }
+}
+```
+
+## Ce qu'il reste à faire concrètement (checklist)
+
+- [x] Cloner `mytraining` en natif dans `/home/vinz/mytraining`
+- [ ] Créer le groupe `code` et l'utilisateur `mcp-git`, l'ajouter au
+      groupe, poser les permissions (lecture seule + écriture `.git`)
+- [ ] Générer une clé SSH dédiée pour `mcp-git`
+- [ ] Ajouter cette clé comme deploy key GitHub (lecture/écriture,
+      limitée à ce repo)
+- [ ] `pip install mcp-server-git --break-system-packages` dans
+      `.py3`
+- [ ] Écrire `serveur_mcp_git_push.py` (code ci-dessus)
+- [ ] Mettre à jour `claude_desktop_config.json`
+- [ ] Tester le cas positif (preview → token → confirm → vérifier sur
+      GitHub) et le cas négatif (confirm avec un mauvais token, ou
+      après un nouveau commit entre-temps → doit être refusé)
 
 ## Compétences pratiquées
 
 - Panorama comparatif avant décision de build (plutôt que réflexe
   "je code direct")
-- Conception d'un serveur MCP avec surface d'accès restreinte
-  (moindre privilège appliqué à un outil d'écriture, pas juste de
-  lecture comme le RAG)
-- Fermeture de boucle conversation → action sur le repo réel
+- Conception d'un mécanisme anti-contournement réel (token recalculé)
+  plutôt qu'une simple convention documentée (docstring)
+- Moindre privilège appliqué à trois niveaux : outils exposés (un seul,
+  push), permissions fichiers système (lecture seule + `.git`), et
+  accès réseau (deploy key limitée à un repo)
+- Diagnostic d'une incompatibilité d'architecture (Electron/`fs.watch`
+  vs système de fichiers réseau 9P) plutôt qu'un simple contournement
+  à l'aveugle
 
 ## Lien avec les notes existantes
 
