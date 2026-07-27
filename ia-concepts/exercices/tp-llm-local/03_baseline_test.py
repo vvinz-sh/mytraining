@@ -24,7 +24,7 @@ for i, exemple in enumerate(cas):
     Réponds uniquement avec un JSON contenant ces 5 champs."""
 
     reponse = requests.post("http://localhost:11434/api/generate", json={
-        "model": "qwen3:8b",
+        "model": "qwen3:4b",
         "prompt": prompt,
         "stream": False,
         "options": {"num_ctx": 8192}
@@ -46,5 +46,5 @@ for i, exemple in enumerate(cas):
     print(texte_genere)
     print()
 
-with open("baseline_avant_finetuning.json", "w", encoding="utf-8") as f:
+with open("baseline_avant_finetuning_4b.json", "w", encoding="utf-8") as f:
     json.dump(resultats_baseline, f, ensure_ascii=False, indent=2)

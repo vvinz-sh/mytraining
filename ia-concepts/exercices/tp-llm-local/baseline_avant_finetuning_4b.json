@@ -1,0 +1,46 @@
+[
+  {
+    "cas": 0,
+    "reference": {
+      "type_incident": "Crash en boucle d'un service applicatif suite à des OOM kills répétés",
+      "cause_racine": "Consommation mémoire excessive du processus Java (heap proche de la limite -Xmx, GC incapable de libérer suffisamment de mémoire) entraînant l'intervention répétée de l'oom-killer du noyau",
+      "symptome_observe": "Le processus java-app est tué par le kernel (signal 9/KILL) plusieurs fois de suite, avec des warnings de heap à 89-95% juste avant chaque crash ; systemd redémarre le service à chaque fois jusqu'à atteindre la limite de redémarrages rapprochés (StartLimitBurst), provoquant un échec définitif du service et des erreurs 502 côté nginx/kube-probe",
+      "service_affecte": "java-app.service (Order Processing Application)",
+      "action_recommandee": "Augmenter la mémoire disponible ou ajuster les paramètres JVM (-Xmx, -Xms), analyser un éventuel memory leak via heap dump, configurer un oom_score_adj adapté, revoir les limites de restart de systemd (RestartSec, StartLimitIntervalSec, StartLimitBurst) et ajouter du monitoring proactif sur l'usage mémoire"
+    },
+    "reponse_qwen_brute": "{\n  \"type_incident\": \"OOM (Out of Memory) Kill\",\n  \"cause_racine\": \"Heap memory usage exceeding threshold (89%-95%) leading to frequent OOM kills\",\n  \"symptome_observe\": \"Repeated OOM killer events with service restarts and high heap usage (89% to 95%)\",\n  \"service_affecte\": \"java-app.service\",\n  \"action_recommandee\": \"Tune JVM heap size (-Xmx) and implement real-time memory monitoring\"\n}"
+  },
+  {
+    "cas": 1,
+    "reference": {
+      "type_incident": "Panne réseau / résolution DNS et connexions sortantes bloquées",
+      "cause_racine": "Règle iptables OUTPUT en politique DROP bloquant tout le trafic sortant, empêchant les requêtes DNS (port 53) et les connexions vers les services externes (base de données, API tierces)",
+      "symptome_observe": "Erreurs 'Name or service not known', 'Could not resolve host', 'Temporary failure in name resolution' sur plusieurs services (app, curl, wget, dig), échec de systemd-resolved à joindre les serveurs DNS, application entrant en mode dégradé",
+      "service_affecte": "systemd-resolved, application principale (connexion base de données), tâches cron (sync_prices.sh), commandes réseau sortantes (curl, wget, dig)",
+      "action_recommandee": "Vérifier et corriger les règles iptables (flush de la chaîne OUTPUT ou ajout d'une règle ACCEPT pour DNS/HTTPS), redémarrer systemd-resolved, valider la restauration de la connectivité DNS et surveiller les logs applicatifs pour confirmer la reprise normale"
+    },
+    "reponse_qwen_brute": "{\n  \"type_incident\": \"DNS Resolution Failure\",\n  \"cause_racine\": \"iptables rule blocking DNS traffic (UDP port 53) on OUTPUT chain\",\n  \"symptome_observe\": \"Application unable to resolve database host (db.internal.example.com), failed API calls (api.stripe.com)\",\n  \"service_affecte\": \"Application\",\n  \"action_recommandee\": \"Flush iptables OUTPUT chain to allow DNS traffic and restart systemd-resolved service\"\n}"
+  },
+  {
+    "cas": 2,
+    "reference": {
+      "type_incident": "Authentification échouée par désynchronisation cache SSSD/LDAP",
+      "cause_racine": "Le backend SSSD LDAP_CORP est passé hors ligne (timeouts TCP/TLS vers ldaps://ldap-corp.internal:636) pendant environ 10 minutes, ce qui a bloqué le rafraîchissement du cache sysdb et laissé des entrées utilisateurs périmées, alors que ces utilisateurs existaient bien et étaient accessibles via ldapsearch direct",
+      "symptome_observe": "Plusieurs utilisateurs valides (mmartin, sconnard, tleroy, pboucher, vgirard) obtiennent des erreurs 'cache lookup returned no results' lors des tentatives SSH, alors qu'une requête ldapsearch manuelle confirme leur existence dans l'annuaire LDAP",
+      "service_affecte": "sssd (authentification centralisée) et sshd (accès distant)",
+      "action_recommandee": "Vérifier la connectivité et les certificats TLS vers le serveur LDAP, forcer un sss_cache -E pour invalider le cache périmé, surveiller les timeouts de connexion sdap_id_op_connect_done et envisager d'ajuster offline_timeout ainsi que la configuration du pool de connexions TLS pour éviter la désynchronisation du cache"
+    },
+    "reponse_qwen_brute": "{\n  \"type_incident\": \"Service de gestion d'identité (SSSD) indisponible\",\n  \"cause_racine\": \"Mauvaise configuration du certificat TLS : le hostname ne correspond pas au CN du certificat\",\n  \"symptome_observe\": \"Backend LDAP_CORP hors ligne pendant 9 min 49 s ; erreurs 'Bus error' lors de la recherche d'utilisateurs ; authentification SSH échouée pour plusieurs utilisateurs\",\n  \"service_affecte\": \"SSSD (System Security Services Daemon)\",\n  \"action_recommandee\": \"Corriger la configuration du certificat TLS de l'LDAP pour que le hostname corresponde au CN ; vérifier les paramètres SSSD (ldap_uri, tls_req_cert)\"\n}"
+  },
+  {
+    "cas": 3,
+    "reference": {
+      "type_incident": "Saturation d'espace disque système (filesystem full) entraînant des échecs en cascade",
+      "cause_racine": "Le job de sauvegarde nocturne (backup-job) a rempli le système de fichiers /var en écrivant une archive volumineuse (45GB puis 62GB), provoquant l'épuisement total de l'espace disque disponible sur la partition /var",
+      "symptome_observe": "Avertissement EXT4 espace faible (2% restant), puis erreurs EXT4 'No space left on device' et 'filesystem full', échec du backup-job avec fichier archive incomplet laissé sur le disque, échec répété du démarrage d'Apache httpd (impossible de bind sur ports 80/443, redémarrages en boucle puis arrêt car trop rapprochés), échecs de Postfix (impossible de se connecter au transport 'error', échec d'ouverture des fichiers de queue), et échecs d'envoi de mails par cron (status 0x0100)",
+      "service_affecte": "Système de fichiers /var, service Apache HTTP Server (httpd), service de messagerie Postfix, notifications cron par mail, service de sauvegarde (backup-job)",
+      "action_recommandee": "Libérer immédiatement de l'espace sur /var en supprimant l'archive de backup incomplète et les anciens fichiers de logs/backups, augmenter la capacité de la partition /var ou déplacer les sauvegardes vers un volume dédié, mettre en place une surveillance proactive de l'espace disque avec seuils d'alerte, redémarrer les services httpd et postfix après résolution de l'espace disque, et revoir la politique de rétention des sauvegardes pour éviter une récidive"
+    },
+    "reponse_qwen_brute": "{\n  \"type_incident\": \"Trop de connexions SSH simultanées\",\n  \"cause_racine\": \"Client 192.168.56.1 effectue des connexions SSH avec authentification réussie\",\n  \"symptome_observe\": \"Plus de 27 connexions SSH réussies de l'utilisateur vinz depuis 192.168.56.1 en 27 secondes\",\n  \"service_affecte\": \"SSH\",\n  \"action_recommandee\": \"Configurer des limites de connexions SSH et vérifier l'authentification du client\"\n}"
+  }
+]
