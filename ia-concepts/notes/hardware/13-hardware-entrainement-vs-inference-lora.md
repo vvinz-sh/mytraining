@@ -98,6 +98,35 @@ Nuance : ce n'est pas que la tâche soit "mineure" en général, c'est que
 spécifique) est structurellement simple à exprimer, même si le modèle
 qui la supporte est énorme.
 
+## PEFT — le terme générique derrière LoRA
+
+**PEFT (Parameter-Efficient Fine-Tuning)** est la catégorie qui
+chapeaute LoRA, pas un synonyme. LoRA est **une** technique PEFT parmi
+d'autres, toutes partageant le même principe de fond : geler le modèle
+de base et n'entraîner qu'une petite fraction de paramètres
+supplémentaires ou modifiés — vu concrètement dans un TP :
+`Trainable parameters = 33,030,144 of 4,055,498,240 (0.81% trained)`.
+
+Quelques autres techniques de la même famille, pour situer LoRA :
+- **Prefix tuning / Prompt tuning** : au lieu de modifier des poids, on
+  entraîne un petit vecteur de contexte "virtuel" ajouté au début de
+  chaque prompt, que le modèle apprend à interpréter
+- **Adapters** : petits modules entraînables insérés **entre** les
+  couches existantes (LoRA agit en parallèle des poids gelés, pas en
+  série comme les adapters)
+- **IA³** : encore plus léger que LoRA, applique juste des facteurs
+  d'échelle multiplicatifs sur certaines activations
+
+La bibliothèque Python `peft` (Hugging Face, utilisée en interne par
+Unsloth — visible dans ses tracebacks, ex : `peft/tuners/tuners_utils.py`)
+implémente toutes ces variantes de façon unifiée.
+
+**Lien direct avec QLoRA** : QLoRA = **quantification** (le "Q",
+réduit la mémoire du modèle gelé) + **LoRA** (une technique PEFT,
+réduit le nombre de paramètres entraînés) combinés. Les deux visent la
+même chose par des leviers différents : rendre le fine-tuning possible
+sur du matériel limité (ex : une RTX 3070 8 Go).
+
 ## Reconsolidation — poids et gradients en détail (avec un exemple concret)
 
 Repris plus tard pour bien démystifier ce qu'est concrètement un
@@ -170,6 +199,6 @@ facteur ×4-6 détaillé plus haut dans cette même note.
 
 ## À venir (vague 2)
 
-- [ ] Paramètres de génération (`temperature`, `top_p`/`top_k`)
-- [ ] Multimodalité, guardrails, coûts/facturation
-- [ ] Outils de l'écosystème (LangChain, bases vectorielles, etc.)
+- [x] Paramètres de génération (`temperature`, `top_p`/`top_k`)
+- [x] Multimodalité, guardrails, coûts/facturation
+- [x] Outils de l'écosystème (LangChain, bases vectorielles, etc.)
