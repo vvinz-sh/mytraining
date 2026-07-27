@@ -1,4 +1,12 @@
+# index_notes.py
 import glob
+import hashlib
+import json
+import os
+
+CHEMIN_NOTES = "/home/vinz/mytraining/ia-concepts/**/*.md"  # corrigé, natif Linux
+CHEMIN_CHROMA = "/home/vinz/chroma_notes_db/"
+FICHIER_ETAT = "/home/vinz/mytraining/ia-concepts/exercices/tp-rag-mcp/index_state.json"
 
 def chunk_text(text, taille=300, chevauchement=50):
     mots = text.split()
@@ -9,61 +17,71 @@ def chunk_text(text, taille=300, chevauchement=50):
             chunks.append(chunk)
     return chunks
 
-fichiers = glob.glob("/mnt/c/Users/Vinz/Documents/mytraining/ia-concepts/**/*.md", recursive=True)
-tous_chunks = []
-for f in fichiers:
+def hash_contenu(texte):
+    return hashlib.sha256(texte.encode("utf-8")).hexdigest()
+
+# 1. État précédent
+if os.path.exists(FICHIER_ETAT):
+    with open(FICHIER_ETAT) as f:
+        etat_precedent = json.load(f)
+else:
+    etat_precedent = {}
+
+# 2. État actuel
+fichiers_actuels = glob.glob(CHEMIN_NOTES, recursive=True)
+etat_actuel = {}
+contenus = {}
+for f in fichiers_actuels:
     with open(f, encoding="utf-8") as fh:
         contenu = fh.read()
-    for chunk in chunk_text(contenu):
-        tous_chunks.append({"texte": chunk, "source": f})
+    contenus[f] = contenu
+    etat_actuel[f] = hash_contenu(contenu)
 
-print(f"{len(fichiers)} fichiers traités, {len(tous_chunks)} chunks générés")
-for c in tous_chunks[:3]:
-    print(f"--- {c['source']} ---")
-    print(c['texte'][:150], "...\n")
+# 3. Diff
+fichiers_nouveaux_ou_modifies = [
+    f for f, h in etat_actuel.items()
+    if f not in etat_precedent or etat_precedent[f] != h
+]
+fichiers_supprimes = [f for f in etat_precedent if f not in etat_actuel]
 
+print(f"{len(fichiers_nouveaux_ou_modifies)} fichier(s) nouveau(x)/modifié(s), {len(fichiers_supprimes)} supprimé(s), {len(etat_actuel) - len(fichiers_nouveaux_ou_modifies)} inchangé(s)")
 
-from sentence_transformers import SentenceTransformer
+if not fichiers_nouveaux_ou_modifies and not fichiers_supprimes:
+    print("Rien à faire, index déjà à jour.")
+else:
+    import chromadb
+    client = chromadb.PersistentClient(path=CHEMIN_CHROMA)
+    collection = client.get_or_create_collection("notes_formation")
 
-print("Chargement du modèle d'embeddings...")
-model = SentenceTransformer('all-MiniLM-L6-v2')
+    # 4. Supprimer les chunks des fichiers modifiés (avant réajout) et supprimés
+    for f in fichiers_nouveaux_ou_modifies + fichiers_supprimes:
+        collection.delete(where={"source": f})
 
-textes = [c["texte"] for c in tous_chunks]
-print(f"Génération des embeddings pour {len(textes)} chunks...")
-embeddings = model.encode(textes, show_progress_bar=True)
+    # 5. Ré-indexer uniquement les fichiers nouveaux/modifiés
+    if fichiers_nouveaux_ou_modifies:
+        from sentence_transformers import SentenceTransformer
+        print("Chargement du modèle d'embeddings...")
+        model = SentenceTransformer('all-MiniLM-L6-v2')
 
-print(f"Forme des embeddings : {embeddings.shape}")
+        tous_chunks = []
+        for f in fichiers_nouveaux_ou_modifies:
+            for chunk in chunk_text(contenus[f]):
+                tous_chunks.append({"texte": chunk, "source": f})
 
-import chromadb
+        textes = [c["texte"] for c in tous_chunks]
+        print(f"Génération des embeddings pour {len(textes)} chunks...")
+        embeddings = model.encode(textes, show_progress_bar=True)
 
-client = chromadb.PersistentClient(path="/home/vinz/chroma_notes_db/")
+        collection.add(
+            documents=textes,
+            embeddings=embeddings.tolist(),
+            metadatas=[{"source": c["source"]} for c in tous_chunks],
+            ids=[f"{c['source']}::{i}" for i, c in enumerate(tous_chunks)]
+        )
+        print(f"{len(textes)} chunks (ré)indexés")
 
-# Supprime la collection si elle existe déjà (pratique pour relancer le script sans erreur)
-try:
-    client.delete_collection("notes_formation")
-except Exception:
-    pass
+    # 6. Sauvegarder le nouvel état
+    with open(FICHIER_ETAT, "w") as f:
+        json.dump(etat_actuel, f, indent=2)
 
-collection = client.create_collection("notes_formation")
-
-collection.add(
-    documents=textes,
-    embeddings=embeddings.tolist(),
-    metadatas=[{"source": c["source"]} for c in tous_chunks],
-    ids=[str(i) for i in range(len(tous_chunks))]
-)
-
-print(f"{collection.count()} chunks indexés dans Chroma")
-
-# Test de recherche
-question = "qu'est-ce que QLoRA"
-question_embedding = model.encode([question])
-resultats = collection.query(
-    query_embeddings=question_embedding.tolist(),
-    n_results=3
-)
-
-print(f"\n--- Résultats pour : '{question}' ---")
-for doc, meta, distance in zip(resultats["documents"][0], resultats["metadatas"][0], resultats["distances"][0]):
-    print(f"\n[{meta['source']}] (distance={distance:.3f})")
-    print(doc[:200], "...")
+    print(f"Total dans la collection : {collection.count()} chunks")
