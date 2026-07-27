@@ -1,24 +1,37 @@
 <div style="position: relative; width: 100%; height: 440px;">
-<canvas id="radarChart2" role="img" aria-label="Graphique radar complet sur 12 thématiques comparant le niveau atteint à un référentiel de junior MLOps 2 ans d'expérience, sur 10 : fondamentaux 6, génération et paramètres 7, RAG et embeddings 7, attention et architecture 6, hardware 5, sécurité 6, écosystème 3, déploiement et serving 1, monitoring et évaluation 1, CI/CD et pipelines MLOps 0, gouvernance et conformité 2, ingénierie de données pour le ML 0">Niveau sur 12 thématiques face à un junior MLOps 2 ans d'XP : fondamentaux 6, génération et paramètres 7, RAG et embeddings 7, attention et architecture 6, hardware 5, sécurité 6, écosystème 3, déploiement et serving 1, monitoring et évaluation 1, CI/CD et pipelines MLOps 0, gouvernance et conformité 2, ingénierie de données 0.</canvas>
+<canvas id="radarChart6" role="img" aria-label="Graphique radar recalibre sur 12 thematiques face a un referentiel junior MLOps 2 ans d'experience, sur 10 : fondamentaux 8, generation et parametres 7, RAG et embeddings 8, attention et architecture 6, hardware 9, securite 9, ecosysteme 3, deploiement et serving 5, monitoring et evaluation 6, CI/CD et pipelines MLOps 5, gouvernance et conformite 7, ingenierie de donnees 3">Niveau recalibre sur 12 thematiques : fondamentaux 8, generation et parametres 7, RAG et embeddings 8, attention et architecture 6, hardware 9, securite 9, ecosysteme 3, deploiement et serving 5, monitoring et evaluation 6, CI/CD et pipelines MLOps 5, gouvernance et conformite 7, ingenierie de donnees 3.</canvas>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-const ctx = document.getElementById('radarChart2');
-const labels = ['Fondamentaux', 'Génération & paramètres', 'RAG & embeddings', 'Attention & architecture', 'Hardware', 'Sécurité', 'Écosystème', 'Déploiement & serving', 'Monitoring & évaluation', 'CI/CD & pipelines MLOps', 'Gouvernance & conformité', 'Ingénierie de données'];
-const values = [6, 7, 7, 6, 5, 6, 3, 1, 1, 0, 2, 0];
+const ctx = document.getElementById('radarChart6');
+const labels = ['Fondamentaux', 'Generation & parametres', 'RAG & embeddings', 'Attention & architecture', 'Hardware', 'Securite', 'Ecosysteme', 'Deploiement & serving', 'Monitoring & evaluation', 'CI/CD & pipelines MLOps', 'Gouvernance & conformite', 'Ingenierie de donnees'];
+const ancien = [6, 7, 8, 6, 5, 8, 3, 5, 5, 5, 5, 3];
+const nouveau = [8, 7, 8, 6, 9, 9, 3, 5, 6, 5, 7, 3];
 new Chart(ctx, {
   type: 'radar',
   data: {
     labels: labels,
-    datasets: [{
-      label: 'Niveau estimé',
-      data: values,
-      backgroundColor: 'rgba(42,120,214,0.15)',
-      borderColor: '#2a78d6',
-      pointBackgroundColor: '#2a78d6',
-      borderWidth: 2,
-      pointRadius: 3
-    }]
+    datasets: [
+      {
+        label: 'Estimation precedente (incomplete)',
+        data: ancien,
+        backgroundColor: 'rgba(137,135,129,0.08)',
+        borderColor: '#c4c2ba',
+        pointBackgroundColor: '#c4c2ba',
+        borderWidth: 1.5,
+        borderDash: [4, 3],
+        pointRadius: 2
+      },
+      {
+        label: 'Niveau reel actuel',
+        data: nouveau,
+        backgroundColor: 'rgba(42,120,214,0.15)',
+        borderColor: '#2a78d6',
+        pointBackgroundColor: '#2a78d6',
+        borderWidth: 2,
+        pointRadius: 3
+      }
+    ]
   },
   options: {
     responsive: true,
@@ -33,7 +46,9 @@ new Chart(ctx, {
         pointLabels: { color: '#52514e', font: { size: 10.5 } }
       }
     },
-    plugins: { legend: { display: false } }
+    plugins: {
+      legend: { display: true, position: 'bottom', labels: { color: '#52514e', font: { size: 11 } } }
+    }
   }
 });
 </script>

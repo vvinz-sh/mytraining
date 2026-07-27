@@ -8,6 +8,10 @@ en sous-dossiers thématiques (`notes/fondamentaux/`,
 `notes/ecosysteme/`) ; chaque TP a son propre dossier sous
 `exercices/` (design + résultat + code).
 
+## Radar de covering des sujets IA:
+
+![Radar covering](notes/rsc/radar.png)
+
 ## Vague 1 (base) — terminée ✅
 
 - [x] Terminologie : LLM, tokens, prompt/system prompt, tool use, agents, MCP, RAG, embeddings, fine-tuning
