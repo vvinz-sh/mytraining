@@ -1,4 +1,4 @@
-# TP — LLM local, Phase 2 (fine-tuning QLoRA) : en cours 🔄
+# TP — LLM local, Phase 2 (fine-tuning QLoRA) : réalisée ✅
 
 Complète `tp-llm-local-ollama-qlora-draft.md`, Phase 2. Suite de
 `tp-llm-local-phase1-resultat.md` (inférence Ollama validée).

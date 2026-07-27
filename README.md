@@ -62,7 +62,7 @@ En bref :
 - Vague 1 (base) — terminée
 - Vague 2 (approfondissement : paramètres, hardware, écosystème) — terminée
 - Vague 3 (MLOps/Ops : déploiement, monitoring, CI/CD, gouvernance, data engineering) — en préparation
-- 4 TP réalisés avec succès, 2 en réserve
+- 5 TP réalisés avec succès
 
 ## Réflexions transversales
 

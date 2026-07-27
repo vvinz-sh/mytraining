@@ -50,7 +50,7 @@ Notes : `notes/hardware/12-...md`, `13-...md`, `14-panorama-llm-qlora.md`.
 - [x] Agent Ansible avec boucle autonome (`include_tasks`/`loop`) — **réalisé avec succès** ✅ — `exercices/tp-ansible-agent/`
 - [x] Visualiser des embeddings de mots (gensim/GloVe, PCA, matplotlib) — **réalisé avec succès** ✅ — `exercices/tp-visualisation-embeddings/`
 - [x] RAG sur son propre repo + serveur MCP maison — **réalisé avec succès** ✅ — `exercices/tp-rag-mcp/`
-- [ ] LLM local de bout en bout — Ollama (inférence) puis Unsloth/QLoRA (fine-tuning) sur RTX 3070 8 Go, WSL2 — design posé dans `exercices/tp-llm-local/`, pas encore exécuté
+- [x] LLM local de bout en bout — Ollama (inférence) puis Unsloth/QLoRA (fine-tuning) sur RTX 3070 8 Go, WSL2 — **réalisé avec succès** ✅ — `exercies/tp-llm-local/`
 - [x] Sécuriser le serveur RAG/MCP (guardrail pattern + guardrail sémantique) — **réalisé avec succès** ✅ — `exercices/tp-securite/`
 
 ## Vague 3 (MLOps/Ops) — en préparation 🚧

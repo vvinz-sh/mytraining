@@ -1,4 +1,4 @@
-# TP — LLM local, Phase 3 (lancement effectif de l'entraînement QLoRA)
+# TP — LLM local, Phase 3 (lancement effectif de l'entraînement QLoRA) : réalisée ✅
 
 Complète `tp-llm-local-phase2-resultat.md` (préparation dataset,
 terminée). Cette phase couvre la configuration réelle d'Unsloth, le
