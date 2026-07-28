@@ -135,7 +135,36 @@ si le fine-tuning sur des exemples variés corrige spécifiquement ce
 type d'erreur (signal affaibli + bascule vers un prior familier mais
 faux), ou si le problème persiste malgré l'entraînement.
 
-## Récap des cinq modes d'échec observés dans une seule session de test
+### Mise à jour (suite au test de contrôle, TP LLM local Phase 3)
+
+Un test de contrôle ultérieur a révélé une contradiction avec
+l'explication initiale : le même log, testé via un pipeline différent
+(transformers/HF, ~20543 tokens mesurés contre ~4098 côté Ollama/GGUF
+pour un contenu identique — écart dû à une tokenisation différente,
+pas à une troncature), **n'a pas produit l'hallucination** — le
+modèle vanilla a correctement identifié la saturation disque dans ce
+second pipeline.
+
+C'est **contre-intuitif** par rapport à l'explication "lost in the
+middle" initialement retenue : un signal théoriquement plus dilué
+(20543 tokens) aurait dû aggraver le problème, pas le corriger. La
+distance en tokens seule ne suffit donc pas à expliquer le
+comportement observé.
+
+**Hypothèse révisée** : le facteur déterminant n'est peut-être pas la
+distance token-par-token en elle-même, mais la combinaison précise
+tokenizer + moteur d'inférence (GGUF/llama.cpp via Ollama vs
+bnb-4bit/transformers via HF) — deux implémentations qui peuvent
+calculer l'attention différemment sur le même contenu logique, même
+en l'absence de toute troncature des deux côtés. La "distance en
+tokens" reste probablement un facteur réel, mais elle n'est pas le
+seul en jeu, et son poids relatif face au choix du pipeline
+d'inférence reste une question ouverte, pas tranchée par nos deux
+seuls tests.
+
+Détail complet du test de contrôle : `tp-llm-local-phase3-resultat.md`.
+
+## Récap des cinq modes d'échec observés dans une seule session de test (avant tp-llm-local-phase3)
 
 | Mode d'échec | Déclencheur | Exemple observé |
 |---|---|---|
