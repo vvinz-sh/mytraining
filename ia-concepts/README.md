@@ -96,7 +96,7 @@ TP prévu : pipeline CI/CD sur le repo (GitHub Actions relançant indexation + g
 ### 4. Gouvernance & conformité
 
 - [x] RGPD appliqué à l'IA (données personnelles dans les prompts/logs)
-- [ ] AI Act européen — grandes lignes, catégories de risque
+- [x] AI Act européen — grandes lignes, catégories de risque
 - [ ] Documentation type "model card" / "system card"
 - [ ] Audit trail — tracer qui a demandé quoi, quelle version de modèle a répondu
 - [ ] Biais et équité (fairness) — angle gouvernance, pas ML pur
