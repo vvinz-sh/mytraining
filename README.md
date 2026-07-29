@@ -38,10 +38,23 @@ Vault Obsidian : ouvrir ce dossier directement comme vault (plugin **Obsidian Gi
 
 ## Suivi de progression — Logstash
 
-- [ ] Architecture (input / filter / output)
-- [ ] Premier pipeline simple
-- [ ] Filtres grok
-- [ ] Sortie vers Elasticsearch
+## Suivi de progression — Logstash
+
+- [ ] Palier 0 — Panorama (Logstash vs rsyslog/Fluentd/Vector,
+      interfaçage — Kafka/SIEM/S3/BDD, sécurité du produit, usage
+      pour la sécurité/SIEM)
+- [ ] Palier 1 — Architecture (input/filter/output), premier pipeline
+- [ ] Palier 2 — Parsing Grok (grok, mutate, date)
+- [ ] Palier 3 — Logs applicatifs/IA structurés (codec json, filtres
+      conditionnels)
+- [ ] Palier 4 — Multi-pipelines, gestion d'erreurs (dead letter
+      queue)
+- [ ] Palier 5 — Sortie vers Elasticsearch/Kibana
+
+Chaque palier prévoit un pont de clôture vers un autre domaine de la
+formation (RHEL/Ansible/IA) — voir `reflexions-transversales.md`.
+Environnement : VM RHEL8 existante + VM Rocky/Alma 9 (équivalent
+RHEL9), Logstash 8.19.x (LTS jusqu'à juillet 2027).
 
 ## Suivi de progression — Ansible
 
