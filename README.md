@@ -38,8 +38,6 @@ Vault Obsidian : ouvrir ce dossier directement comme vault (plugin **Obsidian Gi
 
 ## Suivi de progression — Logstash
 
-## Suivi de progression — Logstash
-
 - [ ] Palier 0 — Panorama (Logstash vs rsyslog/Fluentd/Vector,
       interfaçage — Kafka/SIEM/S3/BDD, sécurité du produit, usage
       pour la sécurité/SIEM)
