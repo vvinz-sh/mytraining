@@ -46,6 +46,11 @@ structuré, aucun contenu (note/pipeline) n'a encore été écrit.
 **Pont prévu** : écho avec la notion de "log structuré dès l'entrée"
 posée en note 46 (module IA).
 
+**Pont Ansible** : écrire un rôle Ansible pour déployer Logstash
+lui-même (install + template `logstash.yml`/premier `.conf`) sur les
+deux VM plutôt qu'une install manuelle — réactive rôles/idempotence
+sur un cas neuf.
+
 ## Palier 2 — Parsing Grok
 
 - [ ] Filtre `grok` (patterns prédéfinis), `mutate`, `date`
@@ -53,6 +58,9 @@ posée en note 46 (module IA).
 **Pont prévu** : reparser le log d'incident `tp-ansible-agent`
 (520 lignes, disque plein) avec un pattern grok sur mesure — remplacer
 la lecture manuelle faite à l'œil ce soir-là par un vrai pipeline.
+
+**Pont Ansible (complémentaire)** : parser la sortie verbeuse d'un
+`ansible-playbook -v` avec un pattern grok sur mesure.
 
 ## Palier 3 — Logs applicatifs/IA structurés
 
@@ -62,9 +70,19 @@ la lecture manuelle faite à l'œil ce soir-là par un vrai pipeline.
 (`tokens_entree`, `finish_reason`, `params_generation`...) — valider
 concrètement un schéma resté jusque-là théorique.
 
+**Pont Ansible (officiel)** : le callback plugin
+`community.general.logstash` envoie directement les événements
+d'exécution d'un playbook (tâche par tâche, succès/échec, hôte) vers
+Logstash en JSON structuré — brancher un vrai playbook existant en
+direct plutôt qu'ingérer un fichier statique.
+
 ## Palier 4 — Multi-pipelines, gestion d'erreurs
 
 - [ ] `pipelines.yml`, sorties multiples, dead letter queue
+**Pont Ansible (piste)** : router les échecs de tâches (via le
+
+callback ci-dessus) vers une sortie séparée — écho à la gestion
+d'erreurs/handlers déjà vue côté Ansible.
 
 ## Palier 5 — Sortie Elasticsearch/Kibana
 
