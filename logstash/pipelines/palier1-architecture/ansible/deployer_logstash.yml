@@ -1,0 +1,6 @@
+---
+- name: Déployer Logstash sur les VM de lab
+  hosts: logstash_hosts
+  become: true
+  roles:
+    - logstash
