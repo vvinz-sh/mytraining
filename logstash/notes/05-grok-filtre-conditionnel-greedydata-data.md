@@ -10,6 +10,12 @@ Extraire le pourcentage de heap JVM sur les lignes `java-app`
 uniquement, sans affecter le traitement des autres types de ligne
 (`systemd`, `kernel`, `cron`...).
 
+Logs:
+```
+Jul 21 08:07:55 rh8102 java-app[15234]: WARN  [gc-thread-0] c.a.MemoryMonitor - Heap usage at 89%, consider tuning -Xmx
+Jul 21 08:23:04 rh8102 systemd[1]: backup-job.service: Failed with result 'exit-code'.
+```
+
 ## GREEDYDATA vs DATA : la nuance qui a failli passer inaperçue
 
 En construisant le second pattern (`%{LOGLEVEL} %{GREEDYDATA} Heap
