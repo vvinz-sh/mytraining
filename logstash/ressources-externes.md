@@ -5,6 +5,15 @@ prises ici, à mesure que le module Logstash avance.
 
 ## Documentation officielle
 
+- **Introduction pratique à Logstash (Elastic, fr)** — tutoriel
+  complet couvrant input/filter/output, comparaison Grok vs `dissect`,
+  usage du Grok Debugger, filtre `date`, et sortie vers Elasticsearch
+  avec templates de mapping. Pertinent dès maintenant (Palier 1) et à
+  reconsulter aux Paliers 2 (Grok/dissect) et 5 (Elasticsearch).
+
+  [https://www.elastic.co/fr/blog/a-practical-introduction-to-logstash](https://www.elastic.co/fr/blog/a-practical-introduction-to-logstash)
+  - [x] Consultée en Palier 1, à reconsulter en profondeur au Palier 2
+
 - **Elastic — Logstash Reference (8.19)** — référence officielle,
   version alignée sur celle installée en lab.
   [https://www.elastic.co/guide/en/logstash/8.19/index.html](https://www.elastic.co/guide/en/logstash/8.19/index.html)

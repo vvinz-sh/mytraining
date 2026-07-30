@@ -98,3 +98,7 @@ comportement séquentiel des blocs `filter` déjà posé en théorie (note
 `01-panorama-alternatives-interfacage-securite.md` (risque du filtre
 `ruby`, moindre privilège), `02-installation-ansible-architecture-input-filter-output.md`
 (déploiement, architecture théorique input/filter/output).
+
+## Sources
+
+- [Introduction pratique à Logstash (Elastic, fr)](https://www.elastic.co/fr/blog/a-practical-introduction-to-logstash)
