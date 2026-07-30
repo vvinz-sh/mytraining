@@ -26,22 +26,22 @@ structuré, aucun contenu (note/pipeline) n'a encore été écrit.
 
 ## Palier 0 — Panorama (théorique, pas encore rédigé en note)
 
-- [ ] Comparatif Logstash vs rsyslog/syslog-ng, Fluentd/Fluent Bit,
+- [x] Comparatif Logstash vs rsyslog/syslog-ng, Fluentd/Fluent Bit,
       Vector — où Logstash se situe (JVM plus lourd, mais parsing Grok
       riche + intégration Elastic native)
-- [ ] Interfaçage au-delà d'Elasticsearch/Kibana — Kafka, JDBC, S3,
+- [x] Interfaçage au-delà d'Elasticsearch/Kibana — Kafka, JDBC, S3,
       SIEM tiers (Sentinel, Splunk), Grafana/Loki
-- [ ] Sécurité du produit — filtre `ruby` (exécution de code), CVE
+- [x] Sécurité du produit — filtre `ruby` (exécution de code), CVE
       ESA-2026-29 (traversée de chemin), chaîne d'approvisionnement des
       plugins, port API 9600 non authentifié
-- [ ] Logstash au service de la sécurité — enrichissement threat intel
+- [x] Logstash au service de la sécurité — enrichissement threat intel
       (`translate`), plugin `threats_classifier` (MITRE ATT&CK),
       intégration SOAR
 
 ## Palier 1 — Architecture (input/filter/output), premier pipeline
 
-- [ ] Structure d'un fichier `.conf`, notion d'event Logstash
-- [ ] Premier pipeline trivial (`stdin`/`stdout`)
+- [x] Structure d'un fichier `.conf`, notion d'event Logstash
+- [x] Premier pipeline trivial (`stdin`/`stdout`)
 
 **Pont prévu** : écho avec la notion de "log structuré dès l'entrée"
 posée en note 46 (module IA).
