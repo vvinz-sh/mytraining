@@ -15,6 +15,10 @@ la JVM**. C'est précisément le coût qu'on cherche à éviter (le
 démarrage de la JVM est le vrai point lent, pas le pipeline
 lui-même).
 
+Limite: le plugin `logstash-input-stdin` est explicitement
+marqué "non reloadable" dans son propre changelog — il maintient un
+flux persistant (le clavier) qui ne peut pas être proprement démonté.
+
 Limite : incompatible avec le flag `-e` (config passée en ligne de
 commande plutôt que par fichier). Si Logstash tourne déjà sans ce
 flag, un rechargement forcé reste possible via signal :
