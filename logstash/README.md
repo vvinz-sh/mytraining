@@ -11,7 +11,7 @@ repart à 1), `pipelines/` (fichiers `.conf` par palier/TP),
 ![Radar covering](rsc/radar.png)
 
 Tous les paliers à 0/10 au démarrage — normal, le module vient d'être
-structuré, aucun contenu (note/pipeline) n'a encore été écrit.
+structuré
 
 ## Environnement
 
@@ -24,7 +24,7 @@ structuré, aucun contenu (note/pipeline) n'a encore été écrit.
   seul ; prévoir 16 Go RAM si Elasticsearch/Kibana s'ajoutent plus tard
   (Palier 5)
 
-## Palier 0 — Panorama (théorique, pas encore rédigé en note)
+## Palier 0 — Panorama 
 
 - [x] Comparatif Logstash vs rsyslog/syslog-ng, Fluentd/Fluent Bit,
       Vector — où Logstash se situe (JVM plus lourd, mais parsing Grok
@@ -37,6 +37,7 @@ structuré, aucun contenu (note/pipeline) n'a encore été écrit.
 - [x] Logstash au service de la sécurité — enrichissement threat intel
       (`translate`), plugin `threats_classifier` (MITRE ATT&CK),
       intégration SOAR
+- [x] Options CLI de confort `notes/06-options-cli-confort.md`
 
 ## Palier 1 — Architecture (input/filter/output), premier pipeline
 
@@ -79,8 +80,8 @@ direct plutôt qu'ingérer un fichier statique.
 ## Palier 4 — Multi-pipelines, gestion d'erreurs
 
 - [ ] `pipelines.yml`, sorties multiples, dead letter queue
-**Pont Ansible (piste)** : router les échecs de tâches (via le
 
+**Pont Ansible (piste)** : router les échecs de tâches (via le
 callback ci-dessus) vers une sortie séparée — écho à la gestion
 d'erreurs/handlers déjà vue côté Ansible.
 
