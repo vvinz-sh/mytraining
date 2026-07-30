@@ -4,7 +4,7 @@ import hashlib
 import json
 import os
 
-CHEMIN_NOTES = "/home/vinz/mytraining/ia-concepts/**/*.md"  # corrigé, natif Linux
+CHEMIN_NOTES = "/home/vinz/mytraining/**/**/*.md"  # corrigé, natif Linux
 CHEMIN_CHROMA = "/home/vinz/chroma_notes_db/"
 FICHIER_ETAT = "/home/vinz/mytraining/ia-concepts/exercices/tp-rag-mcp/index_state.json"
 
