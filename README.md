@@ -41,10 +41,10 @@ Vault Obsidian : ouvrir ce dossier directement comme vault (plugin **Obsidian Gi
 - [x] Palier 0 — Panorama (Logstash vs rsyslog/Fluentd/Vector,
       interfaçage — Kafka/SIEM/S3/BDD, sécurité du produit, usage
       pour la sécurité/SIEM)
-- [x] Palier 1 — Architecture (input/filter/output), premier pipeline
-- [ ] Palier 2 — Parsing Grok (grok, mutate, date)
+- [x] Palier 1 — Architecture (input/filter/output), premier pipeline, présentation configuration générale
+- [ ] Palier 2 — Parsing Grok (grok, mutate, date), conditions basique
 - [ ] Palier 3 — Logs applicatifs/IA structurés (codec json, filtres
-      conditionnels)
+      conditionnels avancés)
 - [ ] Palier 4 — Multi-pipelines, gestion d'erreurs (dead letter
       queue)
 - [ ] Palier 5 — Sortie vers Elasticsearch/Kibana
