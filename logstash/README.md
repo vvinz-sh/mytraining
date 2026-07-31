@@ -39,20 +39,20 @@ structuré
       intégration SOAR
 - [x] Options CLI de confort `notes/06-options-cli-confort.md`
 
-## Palier 1 — Architecture (input/filter/output), premier pipeline
+## Palier 1 — Architecture (input/filter/output), premier pipeline, présentation configuration générale
 
 - [x] Structure d'un fichier `.conf` de pipeline, notion d'event Logstash
 - [x] Premier pipeline trivial (`stdin`/`stdout`), filtre `mutate`
 - [x] Démarrage en ligne de commande (`-f`, `--path.data`,
       `--config.reload.automatic`, `-t`, `--config.debug`)
-- [ ] `logstash.yml` — config globale de l'instance (nom du nœud,
+- [x] `logstash.yml` — config globale de l'instance (nom du nœud,
       taille des batchs, nombre de workers, type de queue)
 - [ ] `pipelines.yml` — définition de plusieurs pipelines (aperçu
       accidentel lors du diagnostic de la boucle de crash du service,
       jamais expliqué en tant que mécanisme à part entière)
-- [ ] Type de queue interne (mémoire vs persistante sur disque) —
+- [x] Type de queue interne (mémoire vs persistante sur disque) —
       impact sur la fiabilité en cas de crash en cours de traitement
-- [ ] `jvm.options` — d'où viennent les valeurs `-Xms1g -Xmx1g` vues
+- [x] `jvm.options` — d'où viennent les valeurs `-Xms1g -Xmx1g` vues
       au démarrage, comment les ajuster proprement
 - [ ] Codecs — brique distincte des filtres, à présenter avant de la
       croiser concrètement au Palier 3 (`codec json`)
