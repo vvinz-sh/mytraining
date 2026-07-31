@@ -68,6 +68,7 @@ sur un cas neuf.
 
 - [x] Filtre `grok` (patterns prédéfinis), `mutate`
 - [x] Filtres conditionnels basiques (`if [champ] == "valeur"`)
+- [ ] Filtre `dissect` en pratique
 - [ ] Filtre `date` (remplacer `@timestamp` par le vrai timestamp du log)
 
 **Pont prévu** : reparser le log d'incident `tp-ansible-agent`
