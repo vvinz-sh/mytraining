@@ -54,7 +54,7 @@ structuré
       impact sur la fiabilité en cas de crash en cours de traitement
 - [x] `jvm.options` — d'où viennent les valeurs `-Xms1g -Xmx1g` vues
       au démarrage, comment les ajuster proprement
-- [ ] Codecs — brique distincte des filtres, à présenter avant de la
+- [x] Codecs — brique distincte des filtres, à présenter avant de la
       croiser concrètement au Palier 3 (`codec json`)
 
 **Pont prévu** : écho avec la notion de "log structuré dès l'entrée"
