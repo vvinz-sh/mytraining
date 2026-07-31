@@ -10,8 +10,6 @@ repart à 1), `pipelines/` (fichiers `.conf` par palier/TP),
 
 ![Radar covering](rsc/radar.png)
 
-Tous les paliers à 0/10 au démarrage — normal, le module vient d'être
-structuré
 
 ## Environnement
 
@@ -56,6 +54,7 @@ structuré
       au démarrage, comment les ajuster proprement
 - [x] Codecs — brique distincte des filtres, à présenter avant de la
       croiser concrètement au Palier 3 (`codec json`)
+- [ ] Patterns Grok personnalisés (`patterns_dir`) — notion théorique
 
 **Pont prévu** : écho avec la notion de "log structuré dès l'entrée"
 posée en note 46 (module IA).
@@ -78,21 +77,17 @@ la lecture manuelle faite à l'œil ce soir-là par un vrai pipeline.
 **Pont Ansible (complémentaire)** : parser la sortie verbeuse d'un
 `ansible-playbook -v` avec un pattern grok sur mesure.
 
-## Palier 3 — Logs applicatifs/IA structurés
+## Palier 3 — Logs applicatifs/IA structurés (renforcement du Palier 2)
 
-- [ ] Codec `json`
-- [ ] Filtres conditionnels avancés (opérateurs `and`/`or`/`nand`/`xor`,
-      regex `=~`/`!~`, inclusion `in`/`not in`, négation `!`)
+- [ ] Codec `json` en profondeur (amorcé en Palier 1, note 10)
+- [ ] Filtres conditionnels avancés (`and`/`or`, `=~`, `in`, `!`)
+- [ ] Liste de patterns dans un `match` + `break_on_match`, vs blocs `if`
+- [ ] Patterns Grok personnalisés en pratique (`patterns_dir`)
 
-**Pont prévu** : ingérer le schéma de logging LLM conçu en note 46
-(`tokens_entree`, `finish_reason`, `params_generation`...) — valider
-concrètement un schéma resté jusque-là théorique.
+**Pont prévu** : ingérer le schéma de logging LLM (note 46).
 
-**Pont Ansible (officiel)** : le callback plugin
-`community.general.logstash` envoie directement les événements
-d'exécution d'un playbook (tâche par tâche, succès/échec, hôte) vers
-Logstash en JSON structuré — brancher un vrai playbook existant en
-direct plutôt qu'ingérer un fichier statique.
+**Pont Ansible (officiel)** : callback plugin
+`community.general.logstash` — playbook en direct vers Logstash.
 
 ## Palier 4 — Multi-pipelines, gestion d'erreurs
 
