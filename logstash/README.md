@@ -54,18 +54,22 @@ sur un cas neuf.
 
 ## Palier 2 — Parsing Grok
 
-- [ ] Filtre `grok` (patterns prédéfinis), `mutate`, `date`
+- [x] Filtre `grok` (patterns prédéfinis), `mutate`
+- [x] Filtres conditionnels basiques (`if [champ] == "valeur"`)
+- [ ] Filtre `date` (remplacer `@timestamp` par le vrai timestamp du log)
 
 **Pont prévu** : reparser le log d'incident `tp-ansible-agent`
 (520 lignes, disque plein) avec un pattern grok sur mesure — remplacer
-la lecture manuelle faite à l'œil ce soir-là par un vrai pipeline.
+la lecture manuelle faite à l'œil ce soir-là par un vrai pipeline. 
 
 **Pont Ansible (complémentaire)** : parser la sortie verbeuse d'un
 `ansible-playbook -v` avec un pattern grok sur mesure.
 
 ## Palier 3 — Logs applicatifs/IA structurés
 
-- [ ] Codec `json`, filtres conditionnels
+- [ ] Codec `json`
+- [ ] Filtres conditionnels avancés (opérateurs `and`/`or`/`nand`/`xor`,
+      regex `=~`/`!~`, inclusion `in`/`not in`, négation `!`)
 
 **Pont prévu** : ingérer le schéma de logging LLM conçu en note 46
 (`tokens_entree`, `finish_reason`, `params_generation`...) — valider
