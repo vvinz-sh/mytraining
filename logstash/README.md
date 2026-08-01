@@ -46,7 +46,7 @@ combler en priorité.
 - [ ] Panorama ECS (Elastic Common Schema) — principes, field sets courants
 - [ ] Panorama des outils Beats (Filebeat, Metricbeat, etc.)
 - [ ] Panorama Elastic Agent/Fleet — où Logstash reste pertinent vs Agent (managed pipelines) suffit
-- [ ] TLS entre composants (Beats→Logstash, Logstash→Elasticsearch)
+- [ ] TLS entre composants (Beats→Logstash, Logstash→Elasticsearch) → pratiqué au TP Beats du Palier 3
 
 ## Palier 1 — Architecture (input/filter/output), premier pipeline, présentation configuration générale
 
@@ -57,7 +57,7 @@ combler en priorité.
 - [x] Type de queue interne (mémoire vs persistante sur disque)
 - [x] `pipelines.yml` - définition de plusieurs pipelines
 - [x] `jvm.options` - Paramètres JVM pour logstash
-- [x] Codecs — brique distincte des filtres, à présenter avant de la
+- [x] Codecs — brique distincte des filtres (recroisée au Palier 3, `codec json`)
 - [x] Patterns Grok personnalisés (`patterns_dir`) — notion théorique
 - [ ] Panorama des endpoints de l'API (port 9600)
 - [ ] Keystore (`logstash-keystore`) — secrets hors `.conf` en clair
