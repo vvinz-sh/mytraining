@@ -54,7 +54,7 @@ repart à 1), `pipelines/` (fichiers `.conf` par palier/TP),
       au démarrage, comment les ajuster proprement
 - [x] Codecs — brique distincte des filtres, à présenter avant de la
       croiser concrètement au Palier 3 (`codec json`)
-- [ ] Patterns Grok personnalisés (`patterns_dir`) — notion théorique
+- [x] Patterns Grok personnalisés (`patterns_dir`) — notion théorique
 
 **Pont prévu** : écho avec la notion de "log structuré dès l'entrée"
 posée en note 46 (module IA).
