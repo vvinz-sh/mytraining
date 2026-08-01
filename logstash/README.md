@@ -44,7 +44,7 @@ combler en priorité.
       intégration SOAR
 - [x] Options CLI de confort `notes/06-options-cli-confort.md`
 - [ ] Panorama ECS (Elastic Common Schema) — principes, field sets courants
-- [ ] Panorama des outils Beats (Filebeat, Metricbeat, etc.)
+- [x] Panorama des outils Beats (Filebeat, Metricbeat, etc.)
 - [ ] Panorama Elastic Agent/Fleet — où Logstash reste pertinent vs Agent (managed pipelines) suffit
 - [ ] TLS entre composants (Beats→Logstash, Logstash→Elasticsearch) → pratiqué au TP Beats du Palier 3
 
