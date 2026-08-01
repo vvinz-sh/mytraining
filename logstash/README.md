@@ -68,7 +68,7 @@ sur un cas neuf.
 
 - [x] Filtre `grok` (patterns prédéfinis), `mutate`
 - [x] Filtres conditionnels basiques (`if [champ] == "valeur"`)
-- [ ] Filtre `dissect` en pratique
+- [x] Filtre `dissect` en pratique
 - [ ] Filtre `date` (remplacer `@timestamp` par le vrai timestamp du log)
 
 **Pont prévu** : reparser le log d'incident `tp-ansible-agent`
@@ -90,9 +90,13 @@ la lecture manuelle faite à l'œil ce soir-là par un vrai pipeline.
 **Pont Ansible (officiel)** : callback plugin
 `community.general.logstash` — playbook en direct vers Logstash.
 
-## Palier 4 — Multi-pipelines, gestion d'erreurs
+## Palier 4 — Observabilité, sorties multiples, gestion d'erreurs
 
-- [ ] `pipelines.yml`, sorties multiples, dead letter queue
+- [ ] Sorties multiples
+- [ ] Dead letter queue native (DLQ)
+- [ ] API de monitoring (port 9600, `_node/stats/pipelines`) —
+      `duration_in_millis` par plugin, comparaison chiffrée grok vs
+      dissect
 
 **Pont Ansible (piste)** : router les échecs de tâches (via le
 callback ci-dessus) vers une sortie séparée — écho à la gestion
