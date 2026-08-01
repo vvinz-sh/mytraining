@@ -10,6 +10,13 @@ repart à 1), `pipelines/` (fichiers `.conf` par palier/TP),
 
 ![Radar covering](rsc/radar.png)
 
+Ce radar est indicatif : il estime la couverture du repo (notes,
+scripts, résultats testés) face au plafond de quelqu'un pratiquant
+Logstash au quotidien depuis 2-3 ans — le 10 représente ce plafond
+estimé, pas la perfection absolue. La partie Elasticsearch/Kibana
+n'étant que du bonus pour ce module (pas l'objectif central), un
+score bas à cet endroit ne reflète pas un retard préoccupant à
+combler en priorité.
 
 ## Environnement
 
