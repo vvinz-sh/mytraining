@@ -60,7 +60,7 @@ combler en priorité.
 - [x] Codecs — brique distincte des filtres (recroisée au Palier 3, `codec json`)
 - [x] Patterns Grok personnalisés (`patterns_dir`) — notion théorique
 - [x] Panorama des endpoints de l'API (port 9600)
-- [ ] Keystore (`logstash-keystore`) — secrets hors `.conf` en clair
+- [x] Keystore (`logstash-keystore`) — secrets hors `.conf` en clair
 - [ ] Communication pipeline-to-pipeline (`input`/`output pipeline`), à distinguer des pipelines isolés de `pipelines.yml`
 
 - [x] TP: Ecrire un rôle Ansible pour déployer Logstash
