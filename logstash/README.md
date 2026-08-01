@@ -43,6 +43,7 @@ combler en priorité.
       (`translate`), plugin `threats_classifier` (MITRE ATT&CK),
       intégration SOAR
 - [x] Options CLI de confort `notes/06-options-cli-confort.md`
+- [ ] Panorama ECS (Elastic Common Schema) — principes, field sets courants
 
 ## Palier 1 — Architecture (input/filter/output), premier pipeline, présentation configuration générale
 
