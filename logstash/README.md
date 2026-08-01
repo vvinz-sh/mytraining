@@ -46,7 +46,7 @@ combler en priorité.
 - [ ] Panorama ECS (Elastic Common Schema) — principes, field sets courants
 - [x] Panorama des outils Beats (Filebeat, Metricbeat, etc.)
 - [x] Panorama Elastic Agent/Fleet — où Logstash reste pertinent vs Agent (managed pipelines) suffit
-- [ ] TLS entre composants (Beats→Logstash, Logstash→Elasticsearch) → pratiqué au TP Beats du Palier 3
+- [x] TLS entre composants (Beats→Logstash, Logstash→Elasticsearch) → pratiqué au TP Beats du Palier 3
 
 ## Palier 1 — Architecture (input/filter/output), premier pipeline, présentation configuration générale
 

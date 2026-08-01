@@ -25,6 +25,19 @@ prises ici, à mesure que le module Logstash avance.
   [https://endoflife.date/logstash](https://endoflife.date/logstash)
   - [x] Consultée pour choisir la ligne 8.19 (support jusqu'à juillet 2027)
 
+## Série de référence complète (français)
+
+- **"Logstash pour les devs" (Blog Pal'Temps, Nicolas Nguyen)** — série
+  de 32 articles en français couvrant quasiment tout le programme :
+  installation Docker, anatomie de pipeline, tous les filtres (Grok,
+  Dissect, Mutate, Date/GeoIP, KV/JSON/XML, Ruby, Aggregate/Metrics),
+  conditionnels, output Elasticsearch, multiline, pipelines multiples,
+  performance, monitoring, Dead Letter Queue, sécurité, debugging,
+  testing, cas pratiques, production.
+  [https://blog.paltemps.fr/logstash-00-introduction](https://blog.paltemps.fr/logstash-00-introduction)
+  - [x] Consultée pour la sécurité (note 18) — à reconsulter pour
+        chaque palier futur, couvre presque tout le programme restant
+
 ## Sécurité
 
 - **ESA-2026-29** — avis de sécurité Elastic (avril 2026), traversée de
