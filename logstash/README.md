@@ -45,7 +45,7 @@ combler en priorité.
 - [x] Options CLI de confort `notes/06-options-cli-confort.md`
 - [ ] Panorama ECS (Elastic Common Schema) — principes, field sets courants
 - [x] Panorama des outils Beats (Filebeat, Metricbeat, etc.)
-- [ ] Panorama Elastic Agent/Fleet — où Logstash reste pertinent vs Agent (managed pipelines) suffit
+- [x] Panorama Elastic Agent/Fleet — où Logstash reste pertinent vs Agent (managed pipelines) suffit
 - [ ] TLS entre composants (Beats→Logstash, Logstash→Elasticsearch) → pratiqué au TP Beats du Palier 3
 
 ## Palier 1 — Architecture (input/filter/output), premier pipeline, présentation configuration générale
