@@ -44,6 +44,7 @@ combler en priorité.
       intégration SOAR
 - [x] Options CLI de confort `notes/06-options-cli-confort.md`
 - [ ] Panorama ECS (Elastic Common Schema) — principes, field sets courants
+- [ ] Panorama des outils Beats (Filebeat, Metricbeat, etc.)
 
 ## Palier 1 — Architecture (input/filter/output), premier pipeline, présentation configuration générale
 
@@ -65,27 +66,17 @@ combler en priorité.
 - [x] Patterns Grok personnalisés (`patterns_dir`) — notion théorique
 - [ ] Panorama des endpoints de l'API (port 9600)
 
-**Pont prévu** : écho avec la notion de "log structuré dès l'entrée"
-posée en note 46 (module IA).
-
-**Pont Ansible** : écrire un rôle Ansible pour déployer Logstash
-lui-même (install + template `logstash.yml`/premier `.conf`) sur les
-deux VM plutôt qu'une install manuelle — réactive rôles/idempotence
-sur un cas neuf.
+- [x] TP: Ecrire un rôle Ansible pour déployer Logstash
 
 ## Palier 2 — Parsing Grok
 
 - [x] Filtre `grok` (patterns prédéfinis), `mutate`
 - [x] Filtres conditionnels basiques (`if [champ] == "valeur"`)
 - [x] Filtre `dissect` en pratique
-- [ ] Filtre `date` (remplacer `@timestamp` par le vrai timestamp du log)
+- [x] Filtre `date` (remplacer `@timestamp` par le vrai timestamp du log)
 
-**Pont prévu** : reparser le log d'incident `tp-ansible-agent`
-(520 lignes, disque plein) avec un pattern grok sur mesure — remplacer
-la lecture manuelle faite à l'œil ce soir-là par un vrai pipeline. 
-
-**Pont Ansible (complémentaire)** : parser la sortie verbeuse d'un
-`ansible-playbook -v` avec un pattern grok sur mesure.
+- [ ] TP: reparser le log d'incident `tp-ansible-agent` — remplacer la lecture manuelle faite à l'œil ce soir-là par un vrai pipeline. 
+- [ ] TP: parser la sortie verbeuse d'un `ansible-playbook -v` avec un pattern grok sur mesure.
 
 ## Palier 3 — Logs applicatifs/IA structurés (renforcement du Palier 2)
 
@@ -94,11 +85,9 @@ la lecture manuelle faite à l'œil ce soir-là par un vrai pipeline.
 - [ ] Liste de patterns dans un `match` + `break_on_match`, vs blocs `if`
 - [ ] Patterns Grok personnalisés en pratique (`patterns_dir`)
 
-**Pont prévu** : ingérer le schéma de logging LLM (note 46).
-Observation `/_node/stats/pipelines` sur le pipeline JSON/IA
-
-**Pont Ansible (officiel)** : callback plugin
-`community.general.logstash` — playbook en direct vers Logstash.
+- [ ] TP: ingérer le schéma de logging LLM (note 46) et Observation `/_node/stats/pipelines` sur le pipeline JSON/IA
+- [ ] TP: Connecter RH8103 comme client Filebeat vers Logstash (Rocky9)
+- [ ] TP: callback plugin `community.general.logstash` — playbook en direct vers Logstash.
 
 ## Palier 4 — Sorties multiples, gestion d'erreurs, supervision
 
@@ -108,9 +97,7 @@ Observation `/_node/stats/pipelines` sur le pipeline JSON/IA
       diagnostiquer une hausse d'échecs (DLQ qui grossit) sans
       redémarrer le pipeline
 
-**Pont Ansible (piste)** : router les échecs de tâches (via le
-callback ci-dessus) vers une sortie séparée — écho à la gestion
-d'erreurs/handlers déjà vue côté Ansible.
+- [ ] TP: router les échecs de tâches Ansible (via le callback plugin logstash) vers une sortie séparée.
 
 ## Palier 5 — Sortie Elasticsearch/Kibana
 
