@@ -59,7 +59,7 @@ combler en priorité.
 - [x] `jvm.options` - Paramètres JVM pour logstash
 - [x] Codecs — brique distincte des filtres (recroisée au Palier 3, `codec json`)
 - [x] Patterns Grok personnalisés (`patterns_dir`) — notion théorique
-- [ ] Panorama des endpoints de l'API (port 9600)
+- [x] Panorama des endpoints de l'API (port 9600)
 - [ ] Keystore (`logstash-keystore`) — secrets hors `.conf` en clair
 - [ ] Communication pipeline-to-pipeline (`input`/`output pipeline`), à distinguer des pipelines isolés de `pipelines.yml`
 
