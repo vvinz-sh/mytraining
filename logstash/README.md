@@ -81,6 +81,7 @@ combler en priorité.
 - [ ] Filtres conditionnels avancés (`and`/`or`, `=~`, `in`, `!`)
 - [ ] Liste de patterns dans un `match` + `break_on_match`, vs blocs `if`
 - [ ] Patterns Grok personnalisés en pratique (`patterns_dir`)
+- [ ] Filtre/codec `multiline` — recoller les stack traces (Java) éclatées 
 
 - [ ] TP: ingérer le schéma de logging LLM (note 46) et Observation `/_node/stats/pipelines` sur le pipeline JSON/IA
 - [ ] TP: Connecter RH8103 comme client Filebeat vers Logstash (Rocky9)
