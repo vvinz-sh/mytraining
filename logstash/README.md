@@ -55,6 +55,7 @@ repart à 1), `pipelines/` (fichiers `.conf` par palier/TP),
 - [x] Codecs — brique distincte des filtres, à présenter avant de la
       croiser concrètement au Palier 3 (`codec json`)
 - [x] Patterns Grok personnalisés (`patterns_dir`) — notion théorique
+- [ ] Panorama des endpoints de l'API (port 9600)
 
 **Pont prévu** : écho avec la notion de "log structuré dès l'entrée"
 posée en note 46 (module IA).
@@ -86,17 +87,18 @@ la lecture manuelle faite à l'œil ce soir-là par un vrai pipeline.
 - [ ] Patterns Grok personnalisés en pratique (`patterns_dir`)
 
 **Pont prévu** : ingérer le schéma de logging LLM (note 46).
+Observation `/_node/stats/pipelines` sur le pipeline JSON/IA
 
 **Pont Ansible (officiel)** : callback plugin
 `community.general.logstash` — playbook en direct vers Logstash.
 
-## Palier 4 — Observabilité, sorties multiples, gestion d'erreurs
+## Palier 4 — Sorties multiples, gestion d'erreurs, supervision
 
 - [ ] Sorties multiples
 - [ ] Dead letter queue native (DLQ)
-- [ ] API de monitoring (port 9600, `_node/stats/pipelines`) —
-      `duration_in_millis` par plugin, comparaison chiffrée grok vs
-      dissect
+- [ ] `/_node/logging` — monter le niveau de log à chaud (PUT) pour
+      diagnostiquer une hausse d'échecs (DLQ qui grossit) sans
+      redémarrer le pipeline
 
 **Pont Ansible (piste)** : router les échecs de tâches (via le
 callback ci-dessus) vers une sortie séparée — écho à la gestion
@@ -105,6 +107,7 @@ d'erreurs/handlers déjà vue côté Ansible.
 ## Palier 5 — Sortie Elasticsearch/Kibana
 
 - [ ] Sortie vers Elasticsearch, visualisation Kibana
+- [ ] API → Elasticsearch : `http_poller` interrogeant - visualisation santé logstash dans Kibana
 
 **Pont prévu** : débloquerait potentiellement le TP Monitoring IA
 (golden dataset/recall@k, resté en draft) — visualiser les résultats
