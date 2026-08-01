@@ -1,0 +1,25 @@
+- pipeline.id: distributeur
+  config.string: |
+    input {
+      generator { count => 3 type => "typeA" }
+      generator { count => 3 type => "typeB" }
+    }
+    output {
+      if [type] == "typeA" {
+        pipeline { send_to => branche_a }
+      } else if [type] == "typeB" {
+        pipeline { send_to => branche_b }
+      }
+    }
+
+- pipeline.id: branche-a
+  config.string: |
+    input { pipeline { address => branche_a } }
+    filter { mutate { add_field => { "traite_par" => "pipeline_a" } } }
+    output { stdout {} }
+
+- pipeline.id: branche-b
+  config.string: |
+    input { pipeline { address => branche_b } }
+    filter { mutate { add_field => { "traite_par" => "pipeline_b" } } }
+    output { stdout {} }
