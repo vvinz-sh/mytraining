@@ -45,30 +45,27 @@ combler en priorité.
 - [x] Options CLI de confort `notes/06-options-cli-confort.md`
 - [ ] Panorama ECS (Elastic Common Schema) — principes, field sets courants
 - [ ] Panorama des outils Beats (Filebeat, Metricbeat, etc.)
+- [ ] Panorama Elastic Agent/Fleet — où Logstash reste pertinent vs Agent (managed pipelines) suffit
+- [ ] TLS entre composants (Beats→Logstash, Logstash→Elasticsearch)
 
 ## Palier 1 — Architecture (input/filter/output), premier pipeline, présentation configuration générale
 
 - [x] Structure d'un fichier `.conf` de pipeline, notion d'event Logstash
 - [x] Premier pipeline trivial (`stdin`/`stdout`), filtre `mutate`
-- [x] Démarrage en ligne de commande (`-f`, `--path.data`,
-      `--config.reload.automatic`, `-t`, `--config.debug`)
-- [x] `logstash.yml` — config globale de l'instance (nom du nœud,
-      taille des batchs, nombre de workers, type de queue)
-- [x] `pipelines.yml` — définition de plusieurs pipelines (aperçu
-      accidentel lors du diagnostic de la boucle de crash du service,
-      jamais expliqué en tant que mécanisme à part entière)
-- [x] Type de queue interne (mémoire vs persistante sur disque) —
-      impact sur la fiabilité en cas de crash en cours de traitement
-- [x] `jvm.options` — d'où viennent les valeurs `-Xms1g -Xmx1g` vues
-      au démarrage, comment les ajuster proprement
+- [x] Démarrage en ligne de commande
+- [x] `logstash.yml` - config globale de l'instance (nom du nœud, taille des batchs, nombre de workers, type de queue)
+- [x] Type de queue interne (mémoire vs persistante sur disque)
+- [x] `pipelines.yml` - définition de plusieurs pipelines
+- [x] `jvm.options` - Paramètres JVM pour logstash
 - [x] Codecs — brique distincte des filtres, à présenter avant de la
-      croiser concrètement au Palier 3 (`codec json`)
 - [x] Patterns Grok personnalisés (`patterns_dir`) — notion théorique
 - [ ] Panorama des endpoints de l'API (port 9600)
+- [ ] Keystore (`logstash-keystore`) — secrets hors `.conf` en clair
+- [ ] Communication pipeline-to-pipeline (`input`/`output pipeline`), à distinguer des pipelines isolés de `pipelines.yml`
 
 - [x] TP: Ecrire un rôle Ansible pour déployer Logstash
 
-## Palier 2 — Parsing Grok
+## Palier 2 — Filtres et Parsing Grok
 
 - [x] Filtre `grok` (patterns prédéfinis), `mutate`
 - [x] Filtres conditionnels basiques (`if [champ] == "valeur"`)
@@ -93,11 +90,10 @@ combler en priorité.
 
 - [ ] Sorties multiples
 - [ ] Dead letter queue native (DLQ)
-- [ ] `/_node/logging` — monter le niveau de log à chaud (PUT) pour
-      diagnostiquer une hausse d'échecs (DLQ qui grossit) sans
-      redémarrer le pipeline
+- [ ] `/_node/logging` — monter le niveau de log à chaud (PUT) pour diagnostic hausse d'échecs (DLQ qui grossit) sans redémarrer le pipeline
 
 - [ ] TP: router les échecs de tâches Ansible (via le callback plugin logstash) vers une sortie séparée.
+- [ ] TP: Persistent queue — simuler un crash en cours de traitement, vérifier la reprise
 
 ## Palier 5 — Sortie Elasticsearch/Kibana
 
