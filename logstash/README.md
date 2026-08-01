@@ -45,7 +45,7 @@ repart à 1), `pipelines/` (fichiers `.conf` par palier/TP),
       `--config.reload.automatic`, `-t`, `--config.debug`)
 - [x] `logstash.yml` — config globale de l'instance (nom du nœud,
       taille des batchs, nombre de workers, type de queue)
-- [ ] `pipelines.yml` — définition de plusieurs pipelines (aperçu
+- [x] `pipelines.yml` — définition de plusieurs pipelines (aperçu
       accidentel lors du diagnostic de la boucle de crash du service,
       jamais expliqué en tant que mécanisme à part entière)
 - [x] Type de queue interne (mémoire vs persistante sur disque) —
