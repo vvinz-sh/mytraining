@@ -113,6 +113,51 @@ lignes vides) — décrire la frontière (l'en-tête, avec `negate`) s'est
 montré structurellement plus robuste à ce genre d'angle mort que
 décrire le contenu à rattacher.
 
+## Précisions apportées après coup (limites de l'exemple et du sujet)
+
+Trois points à ne pas perdre de vue, qui débordent du strict exercice
+de traçage ci-dessus :
+
+**1. L'exemple ne tient que parce qu'il n'y a qu'un seul host.**
+`deployer_filebeat.log` ne contient que `rh8103.localdomain` — le
+raisonnement ci-dessus (buffer séquentiel, frontière `TASK`/`PLAY`)
+suppose implicitement qu'aucune autre source de lignes ne vient
+s'intercaler. Avec plusieurs hosts en parallèle (plusieurs playbooks,
+plusieurs flux), le même codec mélangerait des lignes de sources
+différentes dans un seul buffer — comportement à écarter, pas
+"amélioré", pour ce cas. Il existe de meilleures façons de structurer
+des logs Ansible multi-hosts nativement (callback plugin Ansible en
+JSON structuré, un event par ligne, sans reconstruction a posteriori
+côté Logstash) — sujet à couvrir dans un futur TP du Palier 3
+(README).
+
+**2. Le filtre `multiline` est déprécié depuis longtemps, au profit du
+codec.** Confirmé par le ticket historique d'Elastic qui a acté la
+dépréciation : l'outil préféré dans le pipeline Logstash est le codec
+`multiline`, capable de fusionner les lignes d'une seule entrée avec
+un jeu de règles simple, utilisable avec n'importe quelle source. Le
+filtre remplit une tâche similaire mais n'existe que parce qu'il
+précède historiquement le concept de codec dans Logstash, et n'est pas
+thread-safe — ce qui a motivé sa dépréciation à partir de la version
+2.2, puis son retrait complet en version 5.0. Le choix du codec qu'on
+a fait plus haut (raisonné à partir de l'ordre de traitement, pas de
+la doc) s'avère donc être la seule option réellement disponible
+aujourd'hui, pas juste la plus élégante des deux.
+
+**3. `multiline` ne doit pas être utilisé côté Logstash quand la
+source est Beats (multi-hosts).** Confirmé par la documentation
+officielle du plugin `multiline` : si l'input utilisé supporte
+plusieurs hosts (comme le plugin `beats`), il ne faut pas utiliser ce
+codec côté Logstash — au risque de mélanger les flux et de corrompre
+les données d'event ; les events multiligne doivent être gérés avant
+l'envoi des données à Logstash. Cohérent avec le raisonnement du
+point 1 : un seul buffer séquentiel ne peut pas démêler plusieurs
+sources en parallèle. Le regroupement doit se faire **côté source**
+— typiquement via `multiline` configuré directement dans Filebeat
+(`filebeat.yml`), avant l'envoi vers Logstash — précisément parce que
+l'ordre d'arrivée entre plusieurs hosts n'est pas garanti une fois les
+flux convergés vers Logstash.
+
 ## Reste à traiter dans une session d'implémentation
 
 - Écrire la config `codec => multiline` complète (`pattern`, `negate`,
@@ -135,3 +180,9 @@ posée au Palier 1, confirmée en pratique ici), `08-grok-conditionnel-
 kernel-gestionechec.md` et `tp-parsing-ansible-verbose-resultat.md`
 (ordre de sortie non garanti, tags qui s'accumulent — même vigilance
 face à des lignes non anticipées au moment de concevoir une règle).
+
+## Sources
+
+- [Deprecate multiline filter plugin in favor of multiline codec — elastic/logstash#4386](https://github.com/elastic/logstash/issues/4386)
+- [Logstash Moving Away from Node Protocol and Multiline Filter (Elastic Blog)](https://www.elastic.co/blog/logstash-moving-away-from-node-protocol-and-multiline-filter)
+- [Multiline codec plugin — documentation officielle (Elastic)](https://www.elastic.co/docs/reference/logstash/plugins/plugins-codecs-multiline)
