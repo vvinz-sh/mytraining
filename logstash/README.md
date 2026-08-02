@@ -73,7 +73,7 @@ combler en priorité.
 - [x] Filtre `date` (remplacer `@timestamp` par le vrai timestamp du log)
 - [x] Filtre `mutate`, `convert` (conversion 'unité/type), `gsub`, `split`, `merge`
 
-- [ ] TP: reparser le log d'incident `tp-ansible-agent` — remplacer la lecture manuelle faite à l'œil ce soir-là par un vrai pipeline. 
+- [x] TP: reparser le log d'incident `tp-ansible-agent` — remplacer la lecture manuelle faite à l'œil ce soir-là par un vrai pipeline. 
 - [ ] TP: parser la sortie verbeuse d'un `ansible-playbook -v` avec un pattern grok sur mesure.
 
 ## Palier 3 — Logs applicatifs/IA structurés (renforcement du Palier 2)
