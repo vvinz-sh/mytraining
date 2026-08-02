@@ -29,6 +29,17 @@ combler en priorité.
   seul ; prévoir 16 Go RAM si Elasticsearch/Kibana s'ajoutent plus tard
   (Palier 5)
 
+## Avertissement - Philosophie du module
+
+Volontairement, plusieurs TP suivent une approche "se cogner au mur
+avant de trouver la bonne porte" : construire une solution imparfaite
+(`multiline`+re-parsing sur une sortie `-v` texte, `kv` sans typage
+automatique...), en découvrir la vraie limite en pratique, puis
+comprendre *pourquoi* la solution recommandée existe — plutôt que de
+l'appliquer d'emblée sans jamais avoir ressenti le problème qu'elle
+résout. Plus lent qu'aller droit à la bonne pratique, mais la
+compréhension tient mieux dans la durée.
+
 ## Palier 0 — Panorama 
 
 - [x] Comparatif Logstash vs rsyslog/syslog-ng, Fluentd/Fluent Bit,
