@@ -90,10 +90,10 @@ compréhension tient mieux dans la durée.
 ## Palier 3 — Logs applicatifs/IA structurés (renforcement du Palier 2)
 
 - [ ] Codec `json` en profondeur (amorcé en Palier 1, note 10)
-- [ ] Filtres conditionnels avancés (`and`/`or`, `=~`, `in`, `!`)
-- [ ] Liste de patterns dans un `match` + `break_on_match`, vs blocs `if`
+- [x] Filtres conditionnels avancés (`and`/`or`, `=~`, `in`, `!`)
+- [x] Liste de patterns dans un `match` + `break_on_match`, vs blocs `if`
 - [ ] Patterns Grok personnalisés en pratique (`patterns_dir`)
-- [ ] Filtre/codec `multiline` — recoller les stack traces (Java) éclatées 
+- [x] Filtre/codec `multiline` 
 
 - [ ] TP: ingérer le schéma de logging LLM (note 46) et Observation `/_node/stats/pipelines` sur le pipeline JSON/IA
 - [ ] TP: Connecter RH8103 comme client Filebeat vers Logstash (Rocky9)
