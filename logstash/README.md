@@ -89,7 +89,7 @@ compréhension tient mieux dans la durée.
 
 ## Palier 3 — Logs applicatifs/IA structurés (renforcement du Palier 2)
 
-- [ ] Codec `json` en profondeur (amorcé en Palier 1, note 10)
+- [x] Codec `json` en profondeur (amorcé en Palier 1, note 10)
 - [x] Filtres conditionnels avancés (`and`/`or`, `=~`, `in`, `!`)
 - [x] Liste de patterns dans un `match` + `break_on_match`, vs blocs `if`
 - [x] Patterns Grok personnalisés en pratique (`patterns_dir`)
