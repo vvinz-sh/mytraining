@@ -92,7 +92,7 @@ compréhension tient mieux dans la durée.
 - [ ] Codec `json` en profondeur (amorcé en Palier 1, note 10)
 - [x] Filtres conditionnels avancés (`and`/`or`, `=~`, `in`, `!`)
 - [x] Liste de patterns dans un `match` + `break_on_match`, vs blocs `if`
-- [ ] Patterns Grok personnalisés en pratique (`patterns_dir`)
+- [x] Patterns Grok personnalisés en pratique (`patterns_dir`)
 - [x] Filtre/codec `multiline` 
 
 - [ ] TP: ingérer le schéma de logging LLM (note 46) et Observation `/_node/stats/pipelines` sur le pipeline JSON/IA
