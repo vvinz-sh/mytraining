@@ -55,10 +55,11 @@ complète, chaque ligne ne traverse plus qu'un seul bloc.
 
 Plusieurs itérations avant que le pattern à 7 champs (`ok`, `changed`,
 `unreachable`, `failed`, `skipped`, `rescued`, `ignored`) matche : clé
-littérale oubliée devant un `%{NONNEGINT}` après des copier-coller trop
-rapides, le format du grok pur n'aidant pas, voir plus loin kv.
-
-Point noté au passage : un `%{SPACE}` surnuméraire entre `failed=` et le chiffre
+littérale oubliée devant un `%{NONNEGINT}` après un copier-coller trop
+rapide, puis un nom de champ dupliqué (`rescued` écrit deux fois au
+lieu de `rescued` puis `ignored`). Corrigés un par un en comparant le
+pattern caractère par caractère à la ligne réelle. Point noté au
+passage : un `%{SPACE}` surnuméraire entre `failed=` et le chiffre
 n'a jamais fait échouer le match — `%{SPACE}` est défini comme `\s*`
 (zéro ou plus), donc un `%{SPACE}` de trop matche simplement zéro
 caractère, sans casser le pattern.
@@ -116,6 +117,65 @@ compteurs. Vérifié par calcul indépendant (`grep -cE "^$"` +
 - Vérification d'un résultat de pipeline par un calcul indépendant
   (comptage de lignes) plutôt que par simple relecture visuelle
 
+## Extension hors scope initial : recollage via `multiline`
+
+Le scope du draft excluait explicitement toute corrélation entre
+lignes ("recoller task+statut demanderait `multiline`, hors scope").
+Fait quand même dans une session ultérieure (notes 25 et 26), une
+fois le Palier 3 entamé — cette section documente ce que ça a changé
+sur ce pipeline précis, en plus (pas à la place) de la version
+d'origine ci-dessus.
+
+**Codec, pas filtre.** `multiline` se configure sur l'`input`
+(`codec => multiline { ... }`), pas dans le `filter` — nécessaire
+puisqu'il doit agir avant que les lignes soient dispatchées aux
+workers en parallèle (voir constat sur l'ordre non garanti, plus
+haut). Pattern retenu : `^(TASK|PLAY) \[|^PLAY RECAP`, `negate =>
+true`, `what => "previous"` — une ligne qui ne matche aucune de ces
+deux frontières rejoint le buffer en cours plutôt que d'en déclencher
+un nouveau.
+
+**`auto_flush_interval => 1` nécessaire pour le tout dernier
+buffer.** Sans ligne suivante pour déclencher son flush, le dernier
+groupe (`PLAY RECAP` + sa ligne de récap) restait bloqué indéfiniment
+— comportement documenté du plugin `multiline`, pas un bug de
+configuration. Testé sur plusieurs runs : pas d'impact de latence
+perceptible sur un fichier de cette taille (7 events), l'écart de
+durée observé entre runs (20-25s) est dominé par d'autres facteurs
+(démarrage JVM).
+
+**Correction d'hypothèse initiale: `GREEDYDATA`
+traverse bien un `\n` à l'intérieur d'une même chaîne  — vérifié en nommant un
+`GREEDYDATA` sur un message fusionné et en constatant qu'il contenait
+bien la deuxième ligne physique en entier.
+
+**Résultat avec `multiline`** : les branches `TASK`/`PLAY` ont dû être
+dégroupées (elles partageaient une condition avant, mais `TASK` a
+maintenant une deuxième ligne physique à parser, pas `PLAY`).
+7 events en sortie au lieu de 12 (chaque `TASK`+statut et
+`PLAY RECAP`+récap ne forment plus qu'un seul event) : 0 échec.
+
+**Bug `kv`/`target` découvert et corrigé.** Le grok récap nommait
+`[ansible][target]` (hostname) avant que `kv` ne tourne avec
+`target => "[ansible]"` — résultat, `kv` **remplaçait entièrement**
+le hash `[ansible]` déjà peuplé au lieu d'y fusionner ses 7
+compteurs, faisant disparaître `target` sans aucune erreur ni tag
+d'échec. Comportement documenté côté `logstash-filter-kv` (plusieurs
+tickets historiques sur ce même piège). Diagnostiqué en isolant le
+hostname sous un nom de champ temporaire différent (`ansible2`) pour
+confirmer que le grok, lui, fonctionnait bien. Deux corrections
+possibles : rejouer le grok du hostname après `kv` (fonctionne, mais
+duplique le pattern), ou faire pointer `kv` vers un sous-chemin dédié
+(`target => "[ansible][counters]"`) qui n'entre jamais en collision
+avec `target` — retenue comme solution finale, plus propre, un seul
+grok. Contrepartie : les 7 compteurs vivent sous `ansible.counters.*`
+plutôt que directement sous `ansible.*`.
+
+Détail complet du cheminement (bug de regex, `auto_flush_interval`,
+correction sur `GREEDYDATA`, redécoupage des branches) dans les notes
+25 et 26. Pipeline final avec `multiline` : voir
+`./multiline-ansible-v.conf`.
+
 ## Lien avec les notes existantes
 
 `04-construction-premier-pattern-grok.md` (`WORD` limité par un point,
@@ -123,4 +183,6 @@ groupe optionnel), `08-grok-conditionnel-kernel-gestionechec.md` et
 `tp-fichier-complet-resultat.md` (routage `_grokparsefailure`,
 cascade de filtres après un grok raté — même famille de bug retrouvée
 ici sous une autre forme), `24-mutate-en-profondeur.md` (`convert`,
-utilisé dans les deux versions de la ligne récap).
+utilisé dans les deux versions de la ligne récap), `25-multiline-
+codec-concept.md` et `26-multiline-implementation-ansible-v.md`
+(extension hors scope, ci-dessus).

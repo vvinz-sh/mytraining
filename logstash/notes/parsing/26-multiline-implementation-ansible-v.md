@@ -4,9 +4,10 @@ Suite de la note 25 (fonctionnement conceptuel). Implémentation
 effective sur `deployer_filebeat.log`, avec plusieurs détours
 imprévus qui en disent plus long que le résultat final lui-même.
 
-Travail en cours — le résultat complet (3 branches `if`/`else if`
-adaptées au multiligne) n'est pas encore terminé, cette note fige ce
-qui a été établi jusqu'ici.
+Implémentation terminée : les 3 branches sont écrites et testées
+(voir `tp-parsing-ansible-verbose-resultat.md`, section "Extension
+hors scope initial : recollage via `multiline`"), pipeline final
+dans `multiline-ansible-v.conf`.
 
 ## `auto_flush_interval` : flush périodique, pas un délai par ligne
 
@@ -69,7 +70,7 @@ Testé partiellement : ce pattern échoue proprement
 différente) — comportement attendu, pas gênant en soi, mais qui
 oblige à revoir les conditions de routage.
 
-## Redécoupage des branches nécessaire
+## Redécoupage des branches
 
 Avant multiline : 3 familles de lignes, un pattern par famille,
 `TASK` et `PLAY` regroupés dans la même condition (même en-tête
@@ -82,29 +83,37 @@ Avant multiline : 3 familles de lignes, un pattern par famille,
   toujours différente des deux autres
 
 `TASK` et `PLAY`, qui partageaient une condition commune avant
-multiline, doivent maintenant être **dégroupés** : la condition de
-routage reste la même sur le principe (`^TASK \[` vs `^PLAY \[`
-séparément), mais chacune applique un grok différent puisque leur
-contenu a évolué différemment avec la fusion multiligne.
+multiline, ont donc été **dégroupés** : la condition de routage reste
+la même sur le principe (`^TASK \[` vs `^PLAY \[` séparément), mais
+chacune applique un grok différent puisque leur contenu a évolué
+différemment avec la fusion multiligne.
 
-## Reste à faire
+## Bug `kv`/`target` : `kv` remplace le hash visé au lieu d'y fusionner
 
-- Écrire et tester les 3 branches complètes (`PLAY` inchangé, `TASK`
-  avec le pattern à 2 lignes, `PLAY RECAP` avec la condition resserrée
-  sur l'en-tête et le grok d'extraction vérifié sur le message
-  désormais multiligne)
-- Vérifier si le grok d'extraction du récap (`%{HOSTNAME}%{SPACE}: ...`,
-  sans ancrage `^`) continue de fonctionner correctement sur un
-  message qui commence maintenant par la ligne `PLAY RECAP ****...`
-  avant le hostname, ou s'il a besoin d'un `\n` littéral comme celui
-  du grok `TASK`
-- Repasser sur `tp-parsing-ansible-verbose-resultat.md` une fois le
-  pipeline final stabilisé, pour noter l'évolution du scope (2 lignes
-  fusionnées au lieu de 2 events séparés)
+Une fois les 3 branches écrites et testées, `ansible.target`
+disparaissait spécifiquement sur l'event récap (jamais sur les
+`TASK`) — sans aucun tag `_grokparsefailure`, donc sans signal
+d'erreur visible. Cause isolée en renommant temporairement le champ
+hostname sous `ansible2` (le grok fonctionnait très bien, la
+disparition venait d'ailleurs) : le filtre `kv`, configuré avec
+`target => "[ansible]"`, **remplace entièrement** le hash `[ansible]`
+déjà peuplé par le grok précédent (qui y avait mis `target`), au lieu
+de fusionner ses 7 compteurs dedans — comportement documenté et
+signalé à plusieurs reprises côté `logstash-filter-kv` au fil de ses
+versions.
+
+Deux corrections possibles :
+1. Rejouer le grok du hostname *après* `kv` — fonctionne, mais
+   duplique le pattern
+2. Faire pointer `kv` vers un sous-chemin dédié
+   (`target => "[ansible][counters]"`) qui n'entre jamais en
+   collision avec `target` — retenue comme solution finale, un seul
+   grok, mais les compteurs vivent désormais sous `ansible.counters.*`
+   plutôt que directement sous `ansible.*`
 
 ## Lien avec les notes existantes
 
 `25-multiline-codec-concept.md` (fonctionnement du buffer, `negate`,
 piège des lignes vides — confirmé de nouveau ici en pratique),
 `tp-parsing-ansible-verbose-resultat.md` (grok `TASK`/`PLAY`
-d'origine, à réviser).
+d'origine, révisé — voir section extension multiline).
