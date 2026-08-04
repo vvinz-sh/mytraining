@@ -22,6 +22,7 @@ et TLS/mTLS (note 18) — jusqu'ici jamais concrétisé.
   draft). Ansible n'intervient qu'à
   partir de la **distribution** de ce matériel déjà produit, pas de
   sa génération
+- Résolution des noms `rocky.localdomain`/`rh8103.localdomain` : via `/etc/hosts`, déjà déployé sur les deux VMs (pas de DNS local à mettre en place pour ce TP)
 - **Protection du matériel sensible** : décision prise — la clé
   privée (`.p8`), le certificat (`.crt`) et le certificat de la CA
   (`ca.crt`) de chaque host sont stockés **en un seul bloc** dans un
