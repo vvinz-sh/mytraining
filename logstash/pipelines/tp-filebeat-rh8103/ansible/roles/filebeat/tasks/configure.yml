@@ -61,6 +61,22 @@
     default: true
     state: present
 
+- name: "Autoriser filebeat en lecture sur {{ filebeat_logs_path }} (fichier déjà existant)"
+  ansible.posix.acl:
+    path: "{{ filebeat_logs_path }}"
+    entity: filebeat
+    etype: user
+    permissions: r
+    state: present
+
+- name: Créer le dossier de surcharge systemd pour filebeat
+  ansible.builtin.file:
+    path: /etc/systemd/system/filebeat.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
 - name: Déployer l'override systemd (user dédié)
   ansible.builtin.template:
     src: filebeat-override.conf.j2
@@ -70,6 +86,14 @@
     mode: "0644"
   notify: recharger systemd et redémarrer filebeat
 
+- name: Déployer filebeat.yml
+  ansible.builtin.template:
+    src: filebeat.yml.j2
+    dest: /etc/filebeat/filebeat.yml
+    owner: root
+    group: filebeat
+    mode: "0640"
+  notify: restart filebeat
 
 - name: Vérifier si le keystore filebeat existe déjà
   ansible.builtin.stat:
@@ -79,11 +103,15 @@
 - name: Créer le keystore filebeat
   ansible.builtin.command: filebeat keystore create
   become_user: filebeat
+  vars:
+    ansible_remote_tmp: /var/lib/filebeat/.ansible-tmp
   when: not filebeat_keystore_stat.stat.exists
 
 - name: Lister le contenu du keystore filebeat
   ansible.builtin.command: filebeat keystore list
   become_user: filebeat
+  vars:
+    ansible_remote_tmp: /var/lib/filebeat/.ansible-tmp
   register: filebeat_keystore_list
   changed_when: false
 
@@ -91,14 +119,8 @@
   ansible.builtin.shell: |
     echo "{{ filebeat_ssl_key_passphrase_ks_value }}" | filebeat keystore add SSL_KEY_PASSPHRASE --stdin --force
   become_user: filebeat
+  vars:
+    ansible_remote_tmp: /var/lib/filebeat/.ansible-tmp
   when: "'SSL_KEY_PASSPHRASE' not in filebeat_keystore_list.stdout"
   no_log: true
 
-- name: Déployer filebeat.yml
-  ansible.builtin.template:
-    src: filebeat.yml.j2
-    dest: /etc/filebeat/filebeat.yml
-    owner: root
-    group: filebeat
-    mode: "0640"
-  notify: restart filebeat
