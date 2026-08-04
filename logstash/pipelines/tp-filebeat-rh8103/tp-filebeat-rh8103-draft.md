@@ -22,7 +22,6 @@ et TLS/mTLS (note 18) — jusqu'ici jamais concrétisé.
   draft). Ansible n'intervient qu'à
   partir de la **distribution** de ce matériel déjà produit, pas de
   sa génération
-- Résolution des noms `rocky.localdomain`/`rh8103.localdomain` : via `/etc/hosts`, déjà déployé sur les deux VMs (pas de DNS local à mettre en place pour ce TP)
 - **Protection du matériel sensible** : décision prise — la clé
   privée (`.p8`), le certificat (`.crt`) et le certificat de la CA
   (`ca.crt`) de chaque host sont stockés **en un seul bloc** dans un
@@ -165,12 +164,46 @@ ailleurs dans le module Ansible — comment l'appliquer ici pour éviter
 un redémarrage inutile du service à chaque `ansible-playbook`, même
 quand rien n'a bougé.
 
-Point de moindre privilège à vérifier, cohérent avec la philosophie
-du programme : sous quel utilisateur tourne le process Filebeat, et
-cet utilisateur a-t-il réellement les droits de lecture sur
-`/var/log/messages` (souvent restreint au groupe `adm`/`root` selon
-la distribution) ? À vérifier plutôt qu'à supposer que ça fonctionne
-d'office.
+**Décision prise sur le moindre privilège** : Filebeat tourne en
+`root` par défaut sur le paquet Elastic (comportement du packaging,
+pas une erreur de config) — comportement à **durcir** pour ce TP,
+pas à accepter tel quel :
+
+1. **User dédié** — vérifier d'abord si le paquet a déjà créé un user
+   système `filebeat` (même si le service tourne en `root` par
+   défaut, le user peut très bien exister sans être utilisé) ; sinon
+   en créer un explicitement (`ansible.builtin.user`, système, sans
+   shell de connexion)
+2. **Accès en lecture à `/var/log/messages`** — pas un `chmod`/`chown`
+   direct sur le fichier de log (il est réécrit/tourné par
+   `logrotate`, donc toute permission posée manuellement une fois
+   risque de ne pas survivre à la prochaine rotation — lien direct
+   avec l'Étape 5). Deux pistes à comparer plutôt qu'à choisir à
+   l'aveugle : ajouter le user `filebeat` au groupe propriétaire du
+   fichier (si `rsyslog` groupe `/var/log/messages` à un groupe
+   stable dans le temps), ou une ACL POSIX par défaut sur le
+   **dossier** `/var/log/` (`setfacl -d`, qui s'applique aussi aux
+   fichiers recréés après rotation) plutôt que sur le fichier
+   lui-même
+3. **Override systemd** — un drop-in
+   (`/etc/systemd/system/filebeat.service.d/override.conf`, `User=`/
+   `Group=`) déployé via `template` + `systemd: daemon_reload: true`,
+   plutôt que de modifier le fichier `.service` fourni par le paquet
+   (qui serait écrasé à la prochaine mise à jour RPM)
+
+**SELinux volontairement hors scope ici** — reporté au module
+`rhel8-rhcsa` (Domaine 9, Sécurité, module RHCSA, pas encore attaqué). Ce TP fournit
+un cas concret tout trouvé pour cet exercice futur : le contexte
+SELinux nécessaire pour que Filebeat lise `/var/log/messages` (et,
+potentiellement, ouvre une connexion sortante vers Rocky) sera traité
+là-bas, en tant qu'exercice RHCSA à part entière plutôt qu'un aparté
+dans ce TP Logstash.
+
+Point à garder en tête pour l'Étape 5 (déjà prévue) : la solution
+retenue au point 2 doit être **revalidée** après un test de rotation
+réelle de `/var/log/messages` — une permission qui tient au moment du
+déploiement mais qui saute après le premier `logrotate` ne serait
+pas vraiment "prod ready".
 
 ## Étape 4 — Test et observation des champs générés
 
@@ -209,10 +242,6 @@ côté Logstash — perte de lignes, doublons, ou transition propre.
   équivalent du `sincedb` de Logstash, note 12) — que devient-il en
   cas de redémarrage du service Filebeat pendant une rotation en
   cours ?
-- **Contexte SELinux** sur RH8103 (RHEL8, SELinux actif par défaut) —
-  Filebeat a-t-il besoin d'un contexte spécifique pour lire
-  `/var/log/messages` ou pour ouvrir une connexion sortante vers
-  Rocky ?
 - **Double ingestion au redémarrage** — si le registre n'est pas à
   jour au moment d'un redémarrage de Filebeat, un même log peut-il
   être réexpédié une deuxième fois ?
