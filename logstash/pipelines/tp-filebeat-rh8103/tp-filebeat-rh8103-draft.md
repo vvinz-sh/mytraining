@@ -9,12 +9,25 @@ et TLS/mTLS (note 18) — jusqu'ici jamais concrétisé.
 ## Contexte
 
 - Filebeat déjà **installé** sur RH8103 via un rôle Ansible existant,
-  simple (installation seule, à l'origine de `deployer_filebeat.log`)
-  — mais ce rôle ne **configure** pas encore Filebeat. Ce TP consiste
-  à **étendre ce rôle existant**, pas à configurer `filebeat.yml` à
-  la main sur RH8103 : déploiement et configuration passent par
-  Ansible de bout en bout (control node WSL, cible RH8103), cohérent
-  avec le reste du programme
+  simple (installation seule, à l'origine de `deployer_filebeat.log`).
+  Logstash déjà installé sur Rocky de la même façon (rôle simple,
+  installation seule). Les deux rôles sont **à étendre**, chacun dans
+  son groupe d'inventaire — configuration de bout en bout par Ansible
+  (control node WSL), pas de configuration manuelle sur les cibles
+- **CA, certificats et clés déjà générés manuellement via `openssl`,
+  hors Ansible** — CA locale, CSR par host, signature, EKU
+  différenciés (`clientAuth` pour RH8103, `serverAuth` pour Rocky),
+  conversion PKCS#8 chiffrée par passphrase. Détail complet du
+  processus dans `pki-lab/README.md` (dossier séparé, à côté de ce
+  draft). Ansible n'intervient qu'à
+  partir de la **distribution** de ce matériel déjà produit, pas de
+  sa génération
+- **Protection du matériel sensible** : décision prise — la clé
+  privée (`.p8`), le certificat (`.crt`) et le certificat de la CA
+  (`ca.crt`) de chaque host sont stockés **en un seul bloc** dans un
+  fichier Ansible Vault (`vault.yml`), exclu du dépôt via
+  `.gitignore`. Pas de séparation passphrase/clé — tout le matériel
+  sensible passe par le même mécanisme de protection
 - Log source : `/var/log/messages` (vrai log système, pas un fichier
   synthétique) sur RH8103
 - Destination : Logstash sur Rocky9, input `beats`
@@ -26,39 +39,23 @@ et TLS/mTLS (note 18) — jusqu'ici jamais concrétisé.
   `queue.type: persisted` et la Dead Letter Queue sont prévus au TP
   dédié du Palier 4, pas ici
 
-Question de conception à trancher avant d'écrire la moindre task :
-où les certificats/clés sont-ils **générés** (sur le control node
-WSL, directement sur les cibles via un module Ansible, ou en dehors
-d'Ansible puis distribués) — et comment le matériel sensible (clé
-privée, passphrase) est-il **transporté et protégé** une fois généré ?
-Le module Ansible du programme a déjà introduit **Vault** — est-ce le
-bon outil ici pour chiffrer la passphrase (ou la clé elle-même) dans
-le rôle, plutôt que de la faire transiter en clair via une variable
-Ansible ordinaire ?
+## Étape 1 — Rappel : matériel PKI déjà produit (voir annexe)
 
-## Étape 1 — Générer les certificats (CA, serveur, client)
+CA, certificats serveur/client et clés PKCS#8 chiffrées déjà générés
+et vérifiés (en-tête `ENCRYPTED PRIVATE KEY`, correspondance modulus
+clé/cert confirmée par host) avant même de commencer la partie
+Ansible de ce TP. Processus documenté en annexe, pas répété ici.
 
-Trois éléments : une autorité (CA) locale au lab, un certificat
-serveur pour Rocky (Logstash), un certificat client pour RH8103
-(Filebeat) — tous deux signés par la même CA, condition nécessaire
-pour que la vérification mutuelle fonctionne.
+Deux certificats **expirés** supplémentaires générés en parallèle
+(un par host, `-startdate`/`-enddate` dans le passé) — réservés à
+l'Étape 6 ("prod ready"), pas utilisés dans le déploiement nominal.
 
-Point de vigilance direct depuis la note 18 : la clé doit être au
-format **PKCS#8**, pas PKCS#1 — à vérifier explicitement selon la
-commande `openssl` utilisée pour générer chaque clé (certaines
-génèrent du PKCS#1 par défaut, conversion nécessaire sinon).
+## Étape 2 — Étendre le rôle Ansible existant pour configurer l'input `beats` (Rocky)
 
-Décision prise : la clé privée serveur sera **chiffrée par
-passphrase**, celle-ci récupérée depuis le **Logstash Keystore**
-(`${beat_input_ssl_key_passphrase}`, comme évoqué en note 18) plutôt
-que stockée en clair dans le `.conf`. Ce choix expose potentiellement
-au bug historique documenté (`ssl_key_passphrase` peu fiable selon les
-versions, note 18) — à observer en le vivant plutôt qu'en le
-contournant par anticipation ; si le bug se manifeste réellement, le
-repli reste celui déjà documenté (clé non chiffrée + permissions
-filesystem).
-
-## Étape 2 — Configurer l'input `beats` côté Logstash (Rocky)
+Comme pour Filebeat, le rôle Logstash actuel installe le paquet,
+point final — à étendre avec les tasks de configuration : template
+du `.conf` d'entrée `beats`, distribution du certificat/clé serveur
+depuis le Vault, activation du service.
 
 ```
 input {
@@ -78,13 +75,25 @@ de certificat client. Point à vérifier : le port 5044 doit être
 ouvert côté firewalld sur Rocky, sans quoi la connexion échouera
 silencieusement côté réseau, avant même d'atteindre la couche TLS.
 
+Décision prise pour la passphrase : récupérée depuis le **Logstash
+Keystore** (`${beat_input_ssl_key_passphrase}`, comme évoqué en note
+18) plutôt que stockée en clair dans le `.conf`. Ce choix expose
+potentiellement au bug historique documenté (`ssl_key_passphrase` peu
+fiable selon les versions, note 18) — à observer en le vivant plutôt
+qu'en le contournant par anticipation ; si le bug se manifeste
+réellement, le repli reste celui déjà documenté (clé non chiffrée +
+permissions filesystem).
+
 ## Étape 3 — Étendre le rôle Ansible existant pour configurer Filebeat
 
 Le rôle actuel installe Filebeat, point final — à étendre avec les
 tasks de configuration : template `filebeat.yml` (input sur
 `/var/log/messages`, output vers Logstash avec la config TLS côté
-client), distribution des certificats/clé client, activation +
-démarrage du service avec la nouvelle config.
+client), distribution du certificat/clé client **depuis `vault.yml`**
+(variables Vault → fichiers déposés sur RH8103 via `copy`/`template`
+avec contenu chiffré en amont, déchiffré seulement au moment du
+déploiement grâce au vault-pass), activation + démarrage du service
+avec la nouvelle config.
 
 Question d'idempotence à se poser, dans l'esprit du reste du
 programme : si `filebeat.yml` change (nouveau certificat, nouvelle
@@ -204,9 +213,9 @@ coïncidence de version sans en comprendre l'enjeu.
   validité volontairement courte
 - Permissions réelles sur les clés privées (serveur et client) après
   génération, avant tout resserrement
-- Où et comment les certificats/clés sont générés et transportés vers
-  RH8103 via Ansible, et si Vault est effectivement le bon outil pour
-  protéger la passphrase/clé dans le rôle
+- Contenu du Vault (`vault.yml`) réellement cohérent avec le matériel
+  PKI produit en annexe — à vérifier après déchiffrement plutôt qu'à
+  supposer une simple copie/coller réussie
 - Comportement du rôle étendu à la ré-exécution : redémarre-t-il
   Filebeat uniquement quand la config change (via `handlers`), ou
   systématiquement
@@ -245,3 +254,10 @@ queue persisted repoussée au Palier 4 ici), `18-panorama-tls-mtls.md`
 (PKCS#8, bug `ssl_key_passphrase`, contournement recommandé),
 `12-pipelines-config.md` (`sincedb`, comparé au mécanisme de reprise
 de position de Filebeat).
+
+## Annexe — Petite PKI de lab
+
+Documentée séparément dans `pki-lab/README.md` (à côté de ce draft) —
+CA, CSR, signature, EKU, conversion PKCS#8, vérifications effectuées,
+certs expirés pour l'Étape 6. Généré et vérifié hors Ansible, avant le
+début de la partie déploiement de ce TP.
