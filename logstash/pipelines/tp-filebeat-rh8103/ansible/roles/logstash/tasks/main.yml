@@ -1,0 +1,25 @@
+---
+- name: Importer la clé GPG Elastic
+  ansible.builtin.rpm_key:
+    key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
+
+- name: Déclarer le dépôt YUM Logstash 8.x
+  ansible.builtin.yum_repository:
+    name: logstash-8.x
+    description: "Elastic repository for 8.x packages"
+    baseurl: https://artifacts.elastic.co/packages/8.x/yum
+    gpgcheck: true
+    gpgkey: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    enabled: true
+
+- name: Installer Logstash (version épinglée)
+  ansible.builtin.dnf:
+    name: "logstash-{{ logstash_version }}"
+    state: present
+
+- name: Activer et démarrer le service Logstash
+  ansible.builtin.systemd:
+    name: logstash
+    enabled: true
+    state: started

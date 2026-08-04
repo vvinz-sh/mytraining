@@ -1,0 +1,6 @@
+---
+- name: Déployer Filebeat sur les VM de lab
+  hosts: filebeat_hosts
+  become: true
+  roles:
+    - filebeat
