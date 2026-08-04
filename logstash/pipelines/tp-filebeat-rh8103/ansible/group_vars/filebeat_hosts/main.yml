@@ -1,0 +1,25 @@
+
+# Chemin vers logs à traiter - ce rôle se limite a 1 mais filebeat peut prendre une liste
+filebeat_logs_path: "/var/log/messages"
+
+# Identifiant de l'input - doit être unique par machine
+filebeat_input_id: "{{ ansible_hostname }}-messages"
+
+filebeat_input_type: "filestream"
+
+# Output vers logstash - ce rôle se limite a 1 output mais filebeat peut forward vers plusieurs
+filebeat_logstash_port: "5044"
+filebeat_logstash_host: "rocky.localdomain"
+
+# Chemins SSL
+filebeat_ssl_ca_crt: "/etc/filebeat/certs/ca.crt"
+filebeat_ssl_crt: "/etc/filebeat/certs/{{ ansible_hostname }}.crt"
+filebeat_ssl_key: "/etc/filebeat/certs/{{ ansible_hostname }}.key"
+
+# Contenu des secrets issu du vault.yml du dossier
+filebeat_ssl_content_ca_crt: "{{ vault_filebeat_ssl_content_ca_crt }}"
+filebeat_ssl_content_crt: "{{ vault_filebeat_ssl_content_crt }}"
+filebeat_ssl_content_key: "{{ vault_filebeat_ssl_content_key }}"
+
+#Valeur dans le keystore filebeat
+filebeat_ssl_key_passphrase_ks_value: "{{ vault_filebeat_ssl_key_passphrase_ks_value }}"

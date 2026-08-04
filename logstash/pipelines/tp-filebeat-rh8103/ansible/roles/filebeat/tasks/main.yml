@@ -1,25 +1,6 @@
 ---
-- name: Importer la clé GPG Elastic
-  ansible.builtin.rpm_key:
-    key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-    state: present
+- name: Installer Filebeat
+  ansible.builtin.import_tasks: install.yml
 
-- name: Déclarer le dépôt YUM Filebeat 8.x
-  ansible.builtin.yum_repository:
-    name: filebeat-8.x
-    description: "Elastic repository for 8.x packages"
-    baseurl: https://artifacts.elastic.co/packages/8.x/yum
-    gpgcheck: true
-    gpgkey: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-    enabled: true
-
-- name: Installer Filebeat (version épinglée)
-  ansible.builtin.dnf:
-    name: "filebeat-{{ filebeat_version }}"
-    state: present
-
-- name: Activer et démarrer le service Filebeat
-  ansible.builtin.systemd:
-    name: filebeat
-    enabled: true
-    state: started
+- name: Configurer Filebeat
+  ansible.builtin.import_tasks: configure.yml
