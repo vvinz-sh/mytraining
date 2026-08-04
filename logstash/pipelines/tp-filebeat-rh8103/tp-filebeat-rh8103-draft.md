@@ -14,6 +14,8 @@ et TLS/mTLS (note 18) — jusqu'ici jamais concrétisé.
   installation seule). Les deux rôles sont **à étendre**, chacun dans
   son groupe d'inventaire — configuration de bout en bout par Ansible
   (control node WSL), pas de configuration manuelle sur les cibles
+- Résolution des noms : via `/etc/hosts`, déjà déployé sur les deux VMs
+  (pas de DNS local à mettre en place pour ce TP)
 - **CA, certificats et clés déjà générés manuellement via `openssl`,
   hors Ansible** — CA locale, CSR par host, signature, EKU
   différenciés (`clientAuth` pour RH8103, `serverAuth` pour Rocky),
