@@ -50,6 +50,66 @@ Deux certificats **expirés** supplémentaires générés en parallèle
 (un par host, `-startdate`/`-enddate` dans le passé) — réservés à
 l'Étape 6 ("prod ready"), pas utilisés dans le déploiement nominal.
 
+## Étape 1bis — Structure retenue pour les deux rôles
+
+Conception posée avant d'écrire la moindre task. `ansible.cfg` fourni
+avec le repo était un reliquat d'un projet plus ancien (pointait vers
+`./inventory`, alors que le fichier réel est `inventory.ini`) — à
+corriger avant tout run, sans rapport avec ce TP.
+
+```
+roles/filebeat/
+  tasks/
+    main.yml          # import_tasks: install.yml, configure.yml
+    install.yml        # contenu actuel, déplacé tel quel
+    configure.yml       # dépôt des certs (vault) + template filebeat.yml + notify handler
+  handlers/
+    main.yml           # restart filebeat
+  templates/
+    filebeat.yml.j2
+
+roles/logstash/
+  tasks/
+    main.yml
+    install.yml
+    configure.yml       # dépôt des certs (vault) + template pipelines.yml + template du .conf du pipeline nommé + notify handler
+    keystore.yml         # logique dédiée keystore, incluse depuis main.yml après configure.yml
+  handlers/
+    main.yml            # restart logstash
+  templates/
+    pipelines.yml.j2     # déclare uniquement le pipeline nommé "beats-tls" — pas de "main" (décision ci-dessous)
+    beats-tls.conf.j2    # input beats + output
+```
+
+**Vault** : un fichier par groupe d'inventaire —
+`group_vars/filebeat_hosts/vault.yml` et
+`group_vars/logstash_hosts/vault.yml` — plutôt qu'un vault global
+unique, cohérent avec la structure d'inventaire déjà en place. Même
+mot de passe de vault sur les deux (décision de simplicité pour ce
+lab, pas une exigence technique).
+
+**`pipelines.yml` sans entrée `main`** : question posée avant de
+trancher — un pipeline `main` déclaré mais sans aucun `.conf` dedans
+génère-t-il une erreur au démarrage de Logstash, ou est-il toléré
+silencieusement ? Sans avoir testé, décision prise par prudence :
+**ne pas** garder `main`, seul `beats-tls` est déclaré. Rien d'autre
+ne tourne sur Rocky pour l'instant, donc pas de perte fonctionnelle —
+à revoir le jour où un deuxième pipeline nommé devient nécessaire.
+
+**Séquence keystore (`keystore.yml`), pensée pour l'idempotence** —
+`logstash-keystore add` n'est pas idempotente par défaut (échoue ou
+redemande confirmation si la clé existe déjà), même problématique que
+la création du keystore lui-même :
+1. Vérifier la présence du fichier keystore (`stat` sur le chemin par
+   défaut) → `register`
+2. Créer le keystore (`logstash-keystore create`) seulement si
+   l'étape 1 dit qu'il n'existe pas
+3. Lister le contenu du keystore (`logstash-keystore list`) →
+   `register`
+4. Ajouter la clé `beat_input_ssl_key_passphrase` (valeur depuis le
+   Vault, envoyée en `--stdin`) seulement si son nom n'apparaît pas
+   dans le résultat de l'étape 3
+
 ## Étape 2 — Étendre le rôle Ansible existant pour configurer l'input `beats` (Rocky)
 
 Comme pour Filebeat, le rôle Logstash actuel installe le paquet,
@@ -213,6 +273,9 @@ coïncidence de version sans en comprendre l'enjeu.
   validité volontairement courte
 - Permissions réelles sur les clés privées (serveur et client) après
   génération, avant tout resserrement
+- Existence confirmée d'un user système dédié (`filebeat` sur RH8103,
+  `logstash` sur Rocky, créé par le paquet à l'installation) avant de
+  fixer `owner`/`group` sur les tasks de dépôt des certs — pas supposé
 - Contenu du Vault (`vault.yml`) réellement cohérent avec le matériel
   PKI produit en annexe — à vérifier après déchiffrement plutôt qu'à
   supposer une simple copie/coller réussie
