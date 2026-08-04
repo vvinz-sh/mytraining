@@ -1,0 +1,14 @@
+# Chemins SSL
+logstash_ssl_ca_crt: "/etc/logstash/certs/ca.crt"
+logstash_ssl_crt: "/etc/logstash/certs/{{ ansible_facts.hostname }}.crt"
+logstash_ssl_key: "/etc/logstash/certs/{{ ansible_facts.hostname }}.key"
+
+# Contenu des secrets issu du vault.yml du dossier
+logstash_ssl_content_ca_crt: "{{ vault_logstash_ssl_content_ca_crt }}"
+logstash_ssl_content_crt: "{{ vault_logstash_ssl_content_crt }}"
+logstash_ssl_content_key: "{{ vault_logstash_ssl_content_key }}"
+
+logstash_keystore_pass: "{{ vault_logstash_keystore_pass }}"
+
+#Valeur dans le keystore logstash
+logstash_ssl_key_passphrase_ks_value: "{{ vault_logstash_ssl_key_passphrase_ks_value }}"

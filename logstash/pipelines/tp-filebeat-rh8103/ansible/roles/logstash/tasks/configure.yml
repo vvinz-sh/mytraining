@@ -1,0 +1,106 @@
+---
+- name: Créer le dossier des certificats
+  ansible.builtin.file:
+    path: /etc/logstash/certs
+    state: directory
+    owner: logstash
+    group: logstash
+    mode: "0750"
+
+- name: Déposer le certificat de la CA
+  ansible.builtin.copy:
+    content: "{{ logstash_ssl_content_ca_crt }}"
+    dest: "{{ logstash_ssl_ca_crt }}"
+    owner: logstash
+    group: logstash
+    mode: "0644"
+  no_log: true
+
+- name: Déposer le certificat serveur
+  ansible.builtin.copy:
+    content: "{{ logstash_ssl_content_crt }}"
+    dest: "{{ logstash_ssl_crt }}"
+    owner: logstash
+    group: logstash
+    mode: "0644"
+  no_log: true
+
+- name: Déposer la clé privée serveur
+  ansible.builtin.copy:
+    content: "{{ logstash_ssl_content_key }}"
+    dest: "{{ logstash_ssl_key }}"
+    owner: logstash
+    group: logstash
+    mode: "0600"
+  no_log: true
+
+- name: Déployer /etc/sysconfig/logstash (LOGSTASH_KEYSTORE_PASS)
+  ansible.builtin.template:
+    src: sysconfig-logstash.j2
+    dest: /etc/sysconfig/logstash
+    owner: root
+    group: logstash
+    mode: "0640"
+  no_log: true
+  notify: restart logstash
+
+- name: Vérifier si le keystore logstash existe déjà
+  ansible.builtin.stat:
+    path: /etc/logstash/logstash.keystore
+  register: logstash_keystore_stat
+
+- name: Créer le keystore logstash
+  vars:
+    ansible_remote_tmp: /var/lib/logstash/.ansible-tmp
+  ansible.builtin.command: /usr/share/logstash/bin/logstash-keystore  --path.settings /etc/logstash create
+  become_user: logstash
+  environment:
+    LOGSTASH_KEYSTORE_PASS: "{{ logstash_keystore_pass }}"
+  when: not logstash_keystore_stat.stat.exists
+
+- name: Lister le contenu du keystore logstash
+  vars:
+    ansible_remote_tmp: /var/lib/logstash/.ansible-tmp
+  ansible.builtin.command: /usr/share/logstash/bin/logstash-keystore --path.settings /etc/logstash list
+  become_user: logstash
+  environment:
+    LOGSTASH_KEYSTORE_PASS: "{{ logstash_keystore_pass }}"
+  register: logstash_keystore_list
+  no_log: true
+  changed_when: false
+
+- name: Ajouter la passphrase de la clé beats au keystore
+  vars:
+    ansible_remote_tmp: /var/lib/logstash/.ansible-tmp
+  ansible.builtin.shell: |
+    echo "{{ logstash_ssl_key_passphrase_ks_value }}" | /usr/share/logstash/bin/logstash-keystore  --path.settings /etc/logstash add beat_input_ssl_key_passphrase --stdin
+  become_user: logstash
+  environment:
+    LOGSTASH_KEYSTORE_PASS: "{{ logstash_keystore_pass }}"
+  when: "'beat_input_ssl_key_passphrase' not in logstash_keystore_list.stdout"
+  no_log: true
+
+- name: Déployer pipelines.yml
+  ansible.builtin.template:
+    src: pipelines.yml.j2
+    dest: /etc/logstash/pipelines.yml
+    owner: root
+    group: logstash
+    mode: "0640"
+  notify: restart logstash
+
+- name: Déployer le pipeline beats-tls
+  ansible.builtin.template:
+    src: beats-tls.conf.j2
+    dest: /etc/logstash/conf.d/beats-tls.conf
+    owner: root
+    group: logstash
+    mode: "0640"
+  notify: restart logstash
+
+- name: Ouvrir le port 5044/tcp pour l'input beats
+  ansible.posix.firewalld:
+    port: "5044/tcp"
+    permanent: true
+    immediate: true
+    state: enabled

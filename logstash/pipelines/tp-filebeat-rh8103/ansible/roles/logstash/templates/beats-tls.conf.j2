@@ -1,0 +1,20 @@
+input {
+  beats {
+    port => 5044
+    ssl_enabled => true
+    ssl_certificate => "{{ logstash_ssl_crt }}"
+    ssl_key => "{{ logstash_ssl_key }}"
+    ssl_certificate_authorities => ["{{ logstash_ssl_ca_crt }}"]
+    ssl_verify_mode => "force_peer"
+    ssl_key_passphrase => "${beat_input_ssl_key_passphrase}"
+  }
+}
+
+filter {
+}
+
+output {
+  stdout {
+    codec => rubydebug
+  }
+}
