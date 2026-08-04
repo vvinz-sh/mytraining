@@ -110,6 +110,11 @@ compréhension tient mieux dans la durée.
 
 ## Palier 5 — Sortie Elasticsearch/Kibana
 
+- [ ] Architecture Elasticsearch de base — nœud, index, shard/replica (concept, pas le tuning), mapping statique vs dynamique, règle de dimensionnement du heap JVM (`-Xms`/`-Xmx`, ~50% de la RAM dispo, jamais plus de ~32 Go à cause de la compression des pointeurs)
+- [ ] Kibana : Discover (exploration à la volée) vs Dashboard (visualisations persistées) — concept court, pas de construction de dashboard complet ici
+- [ ] Index Lifecycle Management (ILM) — concept (rotation/suppression automatique des vieux index)
+- [ ] Sécurité de base — `xpack.security.enabled` (actif par défaut depuis la 8.x), authentification minimale entre Logstash et Elasticsearch
+
 - [ ] Sortie vers Elasticsearch, visualisation Kibana
 - [ ] API → Elasticsearch : `http_poller` interrogeant - visualisation santé logstash dans Kibana
 
