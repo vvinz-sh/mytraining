@@ -191,8 +191,26 @@ pas à accepter tel quel :
    plutôt que de modifier le fichier `.service` fourni par le paquet
    (qui serait écrasé à la prochaine mise à jour RPM)
 
+**Passphrase côté Filebeat : Keystore utilisé, mais pas symétrique
+avec celui de Logstash.** Décision prise d'utiliser le Filebeat
+Keystore (`filebeat keystore`) pour la passphrase de la clé client,
+plutôt que de la templater en clair dans `filebeat.yml` — mais
+attention à une asymétrie réelle avec le Keystore Logstash : ce
+dernier propose un **chiffrement**, avec mot de passe optionnel
+(`LOGSTASH_KEYSTORE_PASS`) qui ajoute une couche de protection
+indépendante des permissions filesystem. Le Keystore Filebeat, lui,
+ne fait qu'**obfusquer** les valeurs stockées (terme employé
+explicitement par la doc officielle) — pas de mécanisme de mot de
+passe équivalent. Conséquence concrète : sans ce deuxième verrou, la
+protection réelle du fichier `filebeat.keystore` (chemin par défaut :
+`/var/lib/filebeat/filebeat.keystore`) repose **entièrement** sur ses
+permissions filesystem — ce qui rend le travail de moindre privilège
+du point 1/2 ci-dessus d'autant plus critique pour ce fichier précis,
+puisqu'il n'y a pas de filet de sécurité supplémentaire comme côté
+Logstash.
+
 **SELinux volontairement hors scope ici** — reporté au module
-`rhel8-rhcsa` (Domaine 9, Sécurité, module RHCSA, pas encore attaqué). Ce TP fournit
+`rhel8-rhcsa` (Domaine 9, Sécurité, pas encore attaqué). Ce TP fournit
 un cas concret tout trouvé pour cet exercice futur : le contexte
 SELinux nécessaire pour que Filebeat lise `/var/log/messages` (et,
 potentiellement, ouvre une connexion sortante vers Rocky) sera traité
