@@ -1,0 +1,69 @@
+---
+- name: Ajouter cluster.name/node.name à elasticsearch.yml (sans écraser l'auto-config existante)
+  ansible.builtin.blockinfile:
+    path: /etc/elasticsearch/elasticsearch.yml
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - cluster/node"
+    block: |
+      cluster.name: {{ es_cluster_name }}
+      node.name: {{ ansible_facts.hostname }}
+      discovery.type: single-node
+    owner: root
+    group: elasticsearch
+    mode: "0660"
+
+- name: Déployer le dimensionnement JVM (heap.options)
+  ansible.builtin.template:
+    src: heap.options.j2
+    dest: /etc/elasticsearch/jvm.options.d/heap.options
+    owner: root
+    group: elasticsearch
+    mode: "0660"
+
+- name: Démarrer et activer Elasticsearch
+  ansible.builtin.systemd:
+    name: elasticsearch
+    state: started
+    enabled: true
+
+- name: Vérifier si le mot de passe elastic cible fonctionne déjà
+  ansible.builtin.uri:
+    url: "https://localhost:9200/_security/_authenticate"
+    user: elastic
+    password: "{{ es_elastic_password }}"
+    force_basic_auth: true
+    validate_certs: false
+    status_code: [200, 401]
+  register: es_elastic_auth_check
+  changed_when: false
+
+- name: Fixer le mot de passe elastic
+  ansible.builtin.expect:
+    command: /usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic -i --batch
+    responses:
+      "Enter password for \\[elastic\\]:": "{{ es_elastic_password }}"
+      "Re-enter password for \\[elastic\\]:": "{{ es_elastic_password }}"
+  no_log: true
+  register: es_elastic_reset
+  until: es_elastic_reset.rc == 0
+  retries: 5
+  delay: 10
+
+- name: Vérifier si le mot de passe kibana_system cible fonctionne déjà
+  ansible.builtin.uri:
+    url: "https://localhost:9200/_security/_authenticate"
+    user: kibana_system
+    password: "{{ es_kibana_system_password }}"
+    force_basic_auth: true
+    validate_certs: false
+    status_code: [200, 401]
+  register: es_kibana_system_auth_check
+  changed_when: false
+
+- name: Fixer le mot de passe kibana_system
+  ansible.builtin.expect:
+    command: /usr/share/elasticsearch/bin/elasticsearch-reset-password -u kibana_system -i --batch
+    responses:
+      "Enter password for \\[kibana_system\\]:": "{{ es_kibana_system_password }}"
+      "Re-enter password for \\[kibana_system\\]:": "{{ es_kibana_system_password }}"
+  no_log: true
+

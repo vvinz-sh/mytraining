@@ -1,0 +1,31 @@
+---
+- name: Importer la clé GPG Elastic
+  ansible.builtin.rpm_key:
+    key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
+
+- name: Déclarer le dépôt YUM Elasticsearch 8.x
+  ansible.builtin.yum_repository:
+    name: elastic-8.x
+    description: "Elastic repository for 8.x packages"
+    baseurl: https://artifacts.elastic.co/packages/8.x/yum
+    gpgcheck: true
+    gpgkey: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    enabled: true
+
+- name: Installer Elasticsearch (version épinglée)
+  ansible.builtin.dnf:
+    name: "elasticsearch-{{ elasticsearch_version }}"
+    state: present
+
+- name: Garantir les liens symboliques attendus par le paquet Elasticsearch
+  ansible.builtin.file:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    state: link
+    force: true
+  loop:
+    - { src: /etc/elasticsearch, dest: /usr/share/elasticsearch/config }
+    - { src: /var/lib/elasticsearch, dest: /usr/share/elasticsearch/data }
+    - { src: /var/log/elasticsearch, dest: /usr/share/elasticsearch/logs }
+

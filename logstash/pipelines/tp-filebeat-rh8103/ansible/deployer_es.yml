@@ -1,0 +1,6 @@
+---
+- name: Déployer Elasticsearch sur les VM de lab
+  hosts: es_hosts
+  become: true
+  roles:
+    - elasticsearch

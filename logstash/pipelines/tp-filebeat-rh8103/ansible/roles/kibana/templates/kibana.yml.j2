@@ -1,0 +1,7 @@
+server.host: "0.0.0.0"
+server.name: "{{ ansible_facts.hostname }}"
+
+elasticsearch.hosts: ["https://localhost:9200"]
+elasticsearch.username: "kibana_system"
+elasticsearch.password: "{{ es_kibana_system_password }}"
+elasticsearch.ssl.certificateAuthorities: ["/etc/kibana/certs/ca.crt"]

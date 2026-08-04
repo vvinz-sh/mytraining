@@ -1,0 +1,6 @@
+---
+- name: Installer Elasticsearch
+  ansible.builtin.import_tasks: install.yml
+
+- name: Configurer Elasticsearch
+  ansible.builtin.import_tasks: configure.yml

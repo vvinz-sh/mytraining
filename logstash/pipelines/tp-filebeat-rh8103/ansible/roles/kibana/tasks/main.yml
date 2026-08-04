@@ -1,0 +1,6 @@
+---
+- name: Installer Kibana
+  ansible.builtin.import_tasks: install.yml
+
+- name: Configurer Kibana
+  ansible.builtin.import_tasks: configure.yml

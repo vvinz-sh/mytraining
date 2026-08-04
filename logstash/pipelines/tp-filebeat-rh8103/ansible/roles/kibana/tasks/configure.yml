@@ -1,0 +1,40 @@
+# configure.yml (kibana)
+---
+- name: Créer le dossier certs Kibana
+  ansible.builtin.file:
+    path: /etc/kibana/certs
+    state: directory
+    owner: kibana
+    group: kibana
+    mode: "0750"
+
+- name: Copier le CA généré par Elasticsearch
+  ansible.builtin.copy:
+    src: /etc/elasticsearch/certs/http_ca.crt
+    dest: /etc/kibana/certs/ca.crt
+    remote_src: true
+    owner: kibana
+    group: kibana
+    mode: "0644"
+
+- name: Déployer kibana.yml
+  ansible.builtin.template:
+    src: kibana.yml.j2
+    dest: /etc/kibana/kibana.yml
+    owner: root
+    group: kibana
+    mode: "0640"
+  notify: restart kibana
+
+- name: Démarrer et activer Kibana
+  ansible.builtin.systemd:
+    name: kibana
+    state: started
+    enabled: true
+
+- name: Ouvrir le port 5601/tcp pour l'interface Kibana
+  ansible.posix.firewalld:
+    port: "5601/tcp"
+    permanent: true
+    immediate: true
+    state: enabled
