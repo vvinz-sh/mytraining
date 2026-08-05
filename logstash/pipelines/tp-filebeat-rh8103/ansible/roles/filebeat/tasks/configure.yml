@@ -32,6 +32,8 @@
     owner: filebeat
     group: filebeat
     mode: "0644"
+  tags: crt_deploy
+  notify: restart filebeat
   no_log: true
 
 - name: Déposer le certificat client
@@ -41,6 +43,8 @@
     owner: filebeat
     group: filebeat
     mode: "0644"
+  tags: crt_deploy
+  notify: restart filebeat
   no_log: true
 
 - name: Déposer la clé privée client
@@ -50,6 +54,8 @@
     owner: filebeat
     group: filebeat
     mode: "0600"
+  tags: crt_deploy
+  notify: restart filebeat
   no_log: true
 
 - name: Autoriser filebeat en lecture sur /var/log/ (ACL par défaut, survit à logrotate)
