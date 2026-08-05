@@ -95,7 +95,6 @@ compréhension tient mieux dans la durée.
 - [x] Patterns Grok personnalisés en pratique (`patterns_dir`)
 - [x] Filtre/codec `multiline` 
 
-- [ ] TP: ingérer le schéma de logging LLM (note 46) et Observation `/_node/stats/pipelines` sur le pipeline JSON/IA
 - [x] TP: Connecter RH8103 comme client Filebeat vers Logstash (Rocky9)
 - [ ] TP: callback plugin `community.general.logstash` — playbook en direct vers Logstash.
 
@@ -117,6 +116,7 @@ compréhension tient mieux dans la durée.
 
 - [ ] Sortie vers Elasticsearch, visualisation Kibana
 - [ ] API → Elasticsearch : `http_poller` interrogeant - visualisation santé logstash dans Kibana
+- [ ] TP: ingérer le schéma de logging LLM (note 46) - visualisation dans Kibana
 
 **Pont prévu** : débloquerait potentiellement le TP Monitoring IA
 (golden dataset/recall@k, resté en draft) — visualiser les résultats
