@@ -96,7 +96,7 @@ compréhension tient mieux dans la durée.
 - [x] Filtre/codec `multiline` 
 
 - [ ] TP: ingérer le schéma de logging LLM (note 46) et Observation `/_node/stats/pipelines` sur le pipeline JSON/IA
-- [ ] TP: Connecter RH8103 comme client Filebeat vers Logstash (Rocky9)
+- [x] TP: Connecter RH8103 comme client Filebeat vers Logstash (Rocky9)
 - [ ] TP: callback plugin `community.general.logstash` — playbook en direct vers Logstash.
 
 ## Palier 4 — Sorties multiples, gestion d'erreurs, supervision
