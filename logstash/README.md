@@ -99,7 +99,7 @@ compréhension tient mieux dans la durée.
 - [ ] TP: callback plugin `community.general.logstash` — playbook en direct vers Logstash.
 - [ ] TP: Recoller une stack trace Java multiligne
 
-## Palier 4 — Sorties multiples, gestion d'erreurs, supervision
+## Palier 4 — Sorties multiples, gestion d'erreurs
 
 - [x] Sorties multiples
 - [x] Dead letter queue native (DLQ)
@@ -123,6 +123,13 @@ compréhension tient mieux dans la durée.
 (golden dataset/recall@k, resté en draft) — visualiser les résultats
 d'évaluation dans un vrai dashboard plutôt qu'en `print()` console,
 ce qui à son tour débloquerait le TP CI/CD qui en dépend.
+
+## Palier 6 — Métriques et supervision infrastructure Logstash
+
+- [ ] Métriques de base (throughput, latence, erreurs, heap, queue) + exposition (plugin, API)
+- [ ] Alerting simple (seuils, notifications)
+- [ ] Dashboard Kibana pour la visualisation continue
+- [ ] Tuning/diagnostic — identifier les goulots d'étranglement
 
 ## Niveau visé en sortie
 
