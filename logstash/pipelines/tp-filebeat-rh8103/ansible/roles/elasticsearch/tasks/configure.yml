@@ -1,12 +1,17 @@
 ---
+- name: Désactivation de l'option de discovery
+  ansible.builtin.lineinfile:
+    path: /etc/elasticsearch/elasticsearch.yml
+    state: absent
+    regexp: '^discovery.type'
+
 - name: Ajouter cluster.name/node.name à elasticsearch.yml (sans écraser l'auto-config existante)
   ansible.builtin.blockinfile:
     path: /etc/elasticsearch/elasticsearch.yml
     marker: "# {mark} ANSIBLE MANAGED BLOCK - cluster/node"
     block: |
       cluster.name: {{ es_cluster_name }}
-      node.name: {{ ansible_facts.hostname }}
-      discovery.type: single-node
+      node.name: {{ ansible_facts.fqdn }}
     owner: root
     group: elasticsearch
     mode: "0660"
