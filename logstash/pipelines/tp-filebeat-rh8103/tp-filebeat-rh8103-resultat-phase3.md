@@ -53,18 +53,19 @@ réellement disparaître ce qui n'a pas encore été `fsync`é.
 - **Registre Filebeat testé sur 3 essais de redémarrage** (redémarrage
   propre, `kill -9`, coupure brutale de la VM — détail de chacun plus
   bas) : aucune perte ni doublon sur les deux premiers ; sur la
-  coupure brutale, 25 doublons — Filebeat a relu le fichier source
-  **en entier depuis le début**, signe que sa propre position
-  persistée a été perdue par le crash, pas juste un léger
-  chevauchement de quelques lignes. Perte supplémentaire identifiée
-  en amont, côté rsyslog (contenu du fichier source lui-même
-  incomplet après coupure), distincte de ce problème de registre
+  coupure brutale, 25 doublons — la **fin non consolidée** de la
+  position persistée du registre a été perdue par le crash (pas
+  l'historique entier : les séquences des essais 1/2, déjà présentes
+  dans le fichier bien avant, ne sont pas redupliquées, vérifié par
+  une agrégation globale). Perte supplémentaire identifiée en amont,
+  côté rsyslog (contenu du fichier source lui-même incomplet après
+  coupure), distincte de ce problème de registre
 
 | Essai | Déclenchement | Perte | Doublon |
 |---|---|---|---|
 | 1 — Redémarrage propre | `systemctl restart filebeat` | Non (100/100) | Non |
 | 2 — Process tué brutalement | `systemctl kill -s SIGKILL filebeat` | Non (100/100) | Non — cache OS intact malgré la mort du process |
-| 3 — Coupure brutale de la VM | `echo b > /proc/sysrq-trigger` (sans sync) | Oui, côté rsyslog (voir essai 3) | Oui — 25 lignes rejouées en entier (fichier relu depuis le début) |
+| 3 — Coupure brutale de la VM | `echo b > /proc/sysrq-trigger` (sans sync) | Oui, côté rsyslog (voir essai 3) | Oui — 25 lignes rejouées (fin non consolidée du registre au moment du crash, pas tout le fichier) |
 
 Les deux pièges listés comme "ouverts" dans le draft (registre au
 redémarrage, double ingestion) sont donc résolus, avec une nuance
@@ -168,20 +169,45 @@ puisqu'elles n'existent plus dans le fichier que Filebeat relit.
 
 Coïncidence écartée entre le nombre de doublons (25) et le nombre de
 lignes survivantes sur disque (25) : ça révèle que **le registre
-Filebeat lui-même a perdu sa position de progression sur ce
-fichier**, pas seulement rsyslog son contenu — les écritures du
+Filebeat a perdu sa position de progression sur ce fichier au moment
+du crash**, pas seulement rsyslog son contenu — les écritures du
 registre passent par le même cache OS non `fsync`é
 (`registry.flush => false`, comme n'importe quelle autre écriture
-disque). Au redémarrage, Filebeat n'avait plus aucune trace fiable
-d'avoir déjà lu ce fichier, et a relu/renvoyé tout son contenu restant
-depuis le début plutôt que de reprendre à la ligne où il s'était
-arrêté.
+disque).
+
+**Précision importante, apportée après coup par une vérification
+complémentaire** : l'hypothèse initiale ("Filebeat relit le fichier
+entier depuis zéro, comme s'il n'avait jamais rien lu") s'est révélée
+trop forte. Une agrégation globale sur tout l'index (`doublons`,
+sans filtre sur `SEQ-*`) a montré que les séquences des essais 1 et 2
+(`SEQ-TEST`, `SEQ-KILL`) — présentes dans le fichier bien avant le
+crash de l'essai 3 — **ne sont pas** réapparues en double. Si le
+registre avait vraiment tout perdu et recommencé la lecture depuis le
+tout début du fichier, ces lignes-là auraient dû, elles aussi,
+ressortir dupliquées. Explication plus juste : le registre de
+l'input `filestream` fonctionne par **journal d'ajouts** (append-only)
+plutôt que par réécriture complète à chaque mise à jour — un crash ne
+perd vraisemblablement que **la toute fin non encore consolidée** de
+ce journal (les tout derniers offsets), pas l'historique déjà acté
+plus tôt. Cohérent avec le nombre exact de lignes rejouées (25,
+correspondant très précisément à ce qui restait à traiter côté
+Filebeat au moment de la coupure), plutôt qu'un rejeu integral.
+
+Note en marge, écartée de l'analyse : la même agrégation globale a
+aussi fait remonter des messages de **boot** système dupliqués, à
+deux horodatages distincts (confirmés par `last reboot` :
+`10:41` et `12:10` sur RH8103) — un rollback de snapshot effectué le
+matin même, sans lien avec ce test, explique le premier ; le second
+correspond à notre crash de l'essai 3. Piste non creusée davantage,
+le rollback rendant toute analyse temporelle fine peu fiable de toute
+façon.
 
 **Conclusion** : le registre Filebeat garantit bien
 **"at-least-once"**, jamais "exactly-once" — le scénario le plus
-extrême (coupure système) peut faire perdre **sa propre position
-persistée**, pas juste provoquer un léger chevauchement de quelques
-lignes. Et la vraie fragilité de la chaîne, dans ce test précis,
+extrême (coupure système) peut faire perdre **la fin non consolidée**
+de sa position persistée, pas l'historique entier, provoquant un
+rejeu ciblé sur ce qui restait en cours plutôt qu'une relecture totale
+du fichier. Et la vraie fragilité de la chaîne, dans ce test précis,
 touche **deux couches distinctes** à la fois (rsyslog et le registre
 Filebeat lui-même) — toutes deux victimes du même mécanisme
 (écritures non `fsync`ées), pas seulement rsyslog en amont.
