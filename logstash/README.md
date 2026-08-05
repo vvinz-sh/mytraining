@@ -59,7 +59,7 @@ compréhension tient mieux dans la durée.
 - [x] Panorama Elastic Agent/Fleet — où Logstash reste pertinent vs Agent (managed pipelines) suffit
 - [x] TLS entre composants (Beats→Logstash, Logstash→Elasticsearch) → pratiqué au TP Beats du Palier 3
 
-## Palier 1 — Architecture (input/filter/output), premier pipeline, présentation configuration générale
+## Palier 1 — Architecture de base, premier pipeline, présentation configuration générale
 
 - [x] Structure d'un fichier `.conf` de pipeline, notion d'event Logstash
 - [x] Premier pipeline trivial (`stdin`/`stdout`), filtre `mutate`
@@ -87,7 +87,7 @@ compréhension tient mieux dans la durée.
 - [x] TP: reparser le log d'incident `tp-ansible-agent` — remplacer la lecture manuelle faite à l'œil ce soir-là par un vrai pipeline. 
 - [x] TP: parser la sortie verbeuse d'un `ansible-playbook -v` avec un pattern grok sur mesure.
 
-## Palier 3 — Logs applicatifs/IA structurés (renforcement du Palier 2)
+## Palier 3 — Renforcement, multiligne et intégration
 
 - [x] Codec `json` en profondeur (amorcé en Palier 1, note 10)
 - [x] Filtres conditionnels avancés (`and`/`or`, `=~`, `in`, `!`)
@@ -97,6 +97,7 @@ compréhension tient mieux dans la durée.
 
 - [x] TP: Connecter RH8103 comme client Filebeat vers Logstash (Rocky9)
 - [ ] TP: callback plugin `community.general.logstash` — playbook en direct vers Logstash.
+- [ ] TP: Recoller une stack trace Java multiligne
 
 ## Palier 4 — Sorties multiples, gestion d'erreurs, supervision
 

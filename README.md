@@ -39,9 +39,9 @@ Vault Obsidian : ouvrir ce dossier directement comme vault (plugin **Obsidian Gi
 ## Suivi de progression — Logstash
 
 - [x] Palier 0 — Panorama
-- [x] Palier 1 — Architecture (input/filter/output), premier pipeline, présentation configuration générale
-- [x] Palier 2 — Parsing Grok
-- [ ] Palier 3 — Logs applicatifs/IA structurés
+- [x] Palier 1 — Architecture de base, premier pipeline, présentation configuration générale
+- [x] Palier 2 — Filtres et Parsing Grok
+- [ ] Palier 3 — Renforcement, multiligne et intégration
 - [ ] Palier 4 — Sorties multiples, gestion d'erreurs, supervision
 - [ ] Palier 5 — Sortie vers Elasticsearch/Kibana
 
