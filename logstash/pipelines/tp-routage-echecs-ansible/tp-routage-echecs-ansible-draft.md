@@ -1,117 +1,99 @@
-# TP — Router les échecs de tâches Ansible (callback plugin) vers une sortie séparée (draft)
+# TP — Dupliquer les erreurs Ansible vers un fichier lisible (draft)
 
-Statut : **design posé, pas encore exécuté**. Dernier TP à drafter du
-Palier 4. Prolonge directement `tp-callback-ansible` (Palier 3) —
-même pipeline d'entrée (TCP + `codec json`), cette fois avec un vrai
-routage dessus plutôt qu'un `stdout` brut.
+Statut : **design posé, pas encore exécuté**. Prolonge
+`tp-callback-ansible` : tout part vers Elasticsearch comme
+aujourd'hui, et en plus les erreurs sont **dupliquées** (note 29)
+vers un fichier dédié — pas juste la ligne JSON brute, mais un
+message reconstruit lisible par un humain (façon ligne syslog),
+construit à partir des champs extraits de `ansible_result` via le
+filtre `json`.
 
-## Contexte — champs réels du callback (vérifiés en lisant le code source)
+Pipeline-to-pipeline envisagé puis écarté : un seul traitement léger
+en aval, pas besoin d'isoler quoi que ce soit pour ce scope.
 
-Plutôt que de deviner les noms de champs, lecture directe de
-`plugins/callback/logstash.py` (ansible-collections/community.general).
-Champs pertinents pour ce TP :
+## Contexte — champs réels du callback
 
-- **`status`** — chaîne parmi `"OK"`, `"FAILED"`, `"SKIPPED"`,
-  `"UNREACHABLE"` (pas de booléen simple, une string à comparer)
-- **`ansible_type`** — `"task"`, `"start"`, `"finish"`, `"setup"`,
-  `"import"` — distingue un event de task d'un event de démarrage/fin
-  de playbook
-- **`ansible_task`**, **`ansible_host`**, **`ansible_play_name`** —
-  contexte de la task concernée
-- **`ansible_result`** — **chaîne JSON encodée** (pas un objet JSON
-  imbriqué nativement), produite par `self._dump_results()` côté
-  callback Python. Contient le détail complet du résultat Ansible
-  (message d'erreur, module utilisé, etc.) — mais Logstash la reçoit
-  comme une string à parser, pas comme une structure déjà exploitée
-- **`ansible_changed`** — booléen distinct de `status` (`true`/`false`)
+- **`status`** — `"OK"`, `"FAILED"`, `"SKIPPED"`, `"UNREACHABLE"`
+- **`ansible_result`** — chaîne JSON encodée (`self._dump_results()`),
+  détail complet du résultat Ansible, reçue par Logstash comme une
+  string à parser
 
-## Étape 1 — Router selon `status`
+## Étape 1 — Parser `ansible_result` avec le filtre `json`
 
 ```
 filter {
   if [status] == "FAILED" or [status] == "UNREACHABLE" {
-    # branche échec
-  } else if [status] == "OK" or [status] == "SKIPPED" {
-    # branche normale
+    json {
+      source => "ansible_result"
+      target => "[ansible_result_parsed]"
+    }
   }
 }
 ```
-Question à trancher, pas évidente d'emblée : `UNREACHABLE` (l'hôte
-cible ne répond pas) fait-il partie des "échecs de tâche" à router
-avec `FAILED`, ou est-ce une catégorie à part (un problème de
-connectivité, pas un problème de task) méritant sa propre sortie
-plutôt que d'être mélangé à `FAILED` ? Et que faire de `SKIPPED` —
-avec `OK` dans la branche "normale", ou dans une troisième catégorie ?
-Repense au principe déjà établi sur les sorties multiples (note 29) :
-rien n'empêche plus de deux branches si les catégories sont
-réellement différentes.
+`target` explicite : évite toute collision entre les clés du JSON
+parsé (contenu arbitraire d'un résultat Ansible) et les champs déjà
+présents sur l'event (`host`, notamment).
 
-## Étape 2 — Exploiter `ansible_result` (JSON-dans-JSON, note 28)
+## Étape 2 — Vérifier la structure obtenue selon le type de résultat
 
-Sur la branche échec, `ansible_result` contient le vrai détail de
-l'erreur, mais **enfermé dans une string** — appliquer le filtre
-`json` dessus, comme anticipé en note 28 pour un cas JSON-dans-JSON :
+Sur un `FAILED` (erreur de module, `msg` explicite) vs un
+`UNREACHABLE` (hôte injoignable, aucun module exécuté) — la structure
+de `ansible_result_parsed` est-elle comparable, ou fondamentalement
+différente (pas de clé `module`/`invocation` sur un `UNREACHABLE`) ?
+À observer avant l'étape suivante, pas à supposer uniforme.
+
+## Étape 3 — Reconstruire un message lisible pour le fichier d'erreurs
+
+Objectif : le fichier dédié ne doit pas contenir le blob JSON brut,
+mais une ligne construite façon syslog, lisible sans outil — par
+exemple :
 ```
-filter {
-  json {
-    source => "ansible_result"
-    target => "[ansible_result_parsed]"
+mutate {
+  add_field => {
+    "message_erreur" => "%{[ansible_host]} - %{[ansible_task]} - %{[ansible_result_parsed][msg]}"
   }
 }
 ```
-Point de vigilance direct depuis la note 28 : `target` explicite ici
-n'est pas optionnel par prudence — c'est quasiment nécessaire, vu que
-le contenu exact de `ansible_result` (un résultat Ansible arbitraire)
-pourrait très bien contenir des clés qui entrent en collision avec des
-champs déjà présents (`host`, par exemple, déjà utilisé par le
-callback lui-même en dehors de `ansible_result`).
+Champ exact à utiliser dépend de ce que l'Étape 2 a révélé (le nom de
+la clé contenant le message d'erreur peut différer entre `FAILED` et
+`UNREACHABLE`) — à ajuster une fois la vraie structure observée,
+prévoir éventuellement deux constructions différentes selon le cas.
 
-Vérifier aussi, plutôt que présumer : sur un event `UNREACHABLE` (hôte
-injoignable), `ansible_result` contient-il un JSON structuré
-exploitable de la même façon que sur un `FAILED` (erreur de module),
-ou une structure différente (pas de "module" exécuté, juste une
-erreur de connexion) ?
-
-## Étape 3 — Sorties séparées
+## Étape 4 — Sortie dupliquée
 
 ```
 output {
+  elasticsearch { ... }  # toujours, document inchangé (pas de _parsed dessus)
+
   if [status] == "FAILED" or [status] == "UNREACHABLE" {
-    file { path => "/chemin/echecs_ansible.log" }
-  } else {
-    file { path => "/chemin/ok_ansible.log" }
+    file {
+      path => "/chemin/erreurs_ansible.log"
+      codec => line { format => "%{message_erreur}" }
+    }
   }
 }
 ```
-Cohérent avec le pattern déjà pratiqué sur les TP `ansible-playbook -v`
-(`ok_logs`/`failed_logs`), mais cette fois sur un champ natif
-(`status`) plutôt qu'un tag de parsing (`_grokparsefailure`) — aucun
-grok nulle part dans ce TP, contrairement à tous les précédents sur
-Ansible.
 
 ## Ce qu'il faudra vérifier/clarifier en exécutant
 
-- `UNREACHABLE` rattaché à `FAILED`, ou catégorie séparée — décision
-  à prendre en observant un vrai cas des deux plutôt qu'en théorie
-- Sort de `SKIPPED` : avec `OK`, ou catégorie à part
-- Structure réelle de `ansible_result` sur `UNREACHABLE` vs `FAILED`
-  (module exécuté ou pas) — à vérifier, pas supposer identique
-- Collision de champs potentielle entre `ansible_result_parsed` et le
-  reste de l'event, à confirmer absente une fois `target` en place
+- Structure de `ansible_result_parsed` sur `FAILED` vs `UNREACHABLE`
+- Nom de clé du message d'erreur selon le cas — un seul `mutate`
+  suffit, ou faut-il deux constructions distinctes
+- Confirmer que les documents ES restent inchangés (pas de
+  `ansible_result_parsed` dessus), seul le fichier dupliqué en
+  bénéficie
 
 ## Compétences pratiquées
 
-- Routage sur un champ de statut natif, sans aucun grok — contraste
-  direct avec tous les TP Ansible précédents (recollage/parsing manuel)
-- Application concrète du cas JSON-dans-JSON anticipé en note 28,
-  sur une vraie donnée plutôt qu'un exemple jouet
-- Décision de catégorisation (`UNREACHABLE` avec ou sans `FAILED`)
-  fondée sur l'observation d'un vrai cas, pas une convention arbitraire
+- Duplication en sortie (note 29), jamais pratiquée jusqu'ici
+- Filtre `json` sur un cas JSON-dans-JSON (note 28), avec un vrai
+  objectif de lisibilité humaine en sortie, pas juste un exercice
+  isolé
+- Reconstruction d'un message lisible à partir de champs structurés
+  (`mutate`/`sprintf`)
 
 ## Lien avec les notes existantes
 
-`tp-callback-ansible-draft.md` (pipeline d'entrée réutilisé tel quel),
-`28-codec-filtre-json-approfondi.md` (filtre `json`, `target`,
-JSON-dans-JSON — appliqué ici en pratique), `29-sorties-multiples.md`
-(routage vs duplication), `tp-parsing-ansible-verbose-resultat.md`
-(contraste avec le routage `_grokparsefailure`, sans champ natif).
+`tp-callback-ansible-resultat.md` (pipeline d'entrée réutilisé tel
+quel), `28-codec-filtre-json-approfondi.md` (filtre `json`,
+`target`), `29-sorties-multiples.md` (duplication vs routage).
