@@ -124,10 +124,78 @@ souci de ce genre : chaque event est déjà structuré et individuellement
 tagué (`ansible_host`), quel que soit le nombre de hosts ciblés en
 parallèle — rien à recoller, donc rien à mélanger.
 
+## Limite de sécurité non traitée dans ce TP (contrairement au TP Filebeat)
+
+Contrairement au TP `tp-filebeat-rh8103`, aucun effort mTLS n'a été
+fait ici — pas un oubli, une **limite structurelle** du callback lui-même,
+identifiée après coup.
+
+**Côté Logstash (serveur, input `tcp`)** : le plugin `tcp` supporte
+bel et bien le TLS nativement — mêmes options que celles déjà
+manipulées sur l'input `beats` (`ssl_enabled`, `ssl_certificate`,
+`ssl_key`, `ssl_certificate_authorities`,
+`ssl_client_authentication => "required"` pour du mTLS complet).
+Rien de nouveau à apprendre côté Logstash.
+
+**Côté callback Ansible (client)** : aucune option SSL/TLS parmi
+celles documentées (`server`, `port`, `type`, `pre_command`). Le
+callback s'appuie sur `python-logstash`, qui ouvre un socket TCP
+simple — pas de couche TLS prévue dans son fonctionnement, contrairement
+à Filebeat (`ssl.*` intégré nativement dans `output.logstash`).
+**Conséquence concrète** : activer le TLS côté input Logstash rendrait
+le callback tout simplement incapable de se connecter — pas un
+réglage à ajuster, une fonctionnalité absente du client. Le flux
+circule donc **en clair** sur le réseau, quoi qu'on fasse côté
+Logstash.
+
+**Sécurité réelle de ce flux, telle qu'elle est aujourd'hui** :
+repose entièrement sur le filtrage réseau/firewall (qui peut
+atteindre le port 5000), rien au niveau applicatif — pas
+d'authentification, pas de chiffrement, pas de vérification d'identité
+du client comme le permettait `ssl_verify_mode: force_peer` sur
+l'input `beats`.
+
+**Pistes de contournement, non testées ici** (le client ne sachant
+pas faire du TLS, la solution passe par encapsuler le flux dans un
+tunnel chiffré au niveau transport, transparent pour le callback) :
+- **Tunnel SSH** (`ssh -L 5000:localhost:5000 rocky.localdomain`) —
+  le plus simple ici, réutilise un accès déjà en place entre WSL et
+  Rocky, aucune modification de la config du callback
+- **`stunnel`** — outil dédié à ce cas précis, ne dépend pas d'une
+  session SSH active contrairement au tunnel
+- **VPN/WireGuard** entre les deux machines — chiffre tout le trafic,
+  pas seulement ce flux ; pertinent seulement si d'autres flux à
+  protéger existent aussi
+
+**Confirmation empirique du point ci-dessus, et découverte plus
+grave qu'attendu.** Deux tests réalisés :
+
+1. **TLS activé côté input Logstash, sans exiger l'auth client**
+   (`ssl_enabled => true`, pas de `ssl_client_authentication`) — le
+   callback continue d'envoyer en TCP simple, sans savoir parler TLS.
+   Côté Logstash : erreurs en boucle,
+   `Caused by: io.netty.handler.ssl.NotSslRecordException: not an SSL/TLS record:`.
+   Côté Ansible : **playbook exécuté sans le moindre avertissement**,
+   même sans `-v` — rien n'indique que l'envoi des logs a échoué.
+2. **Logstash complètement arrêté** — même résultat : playbook
+   exécuté normalement, **aucune erreur ni avertissement** affiché par
+   le callback, alors qu'il ne peut joindre personne.
+
+**Conséquence à retenir, au-delà du seul défaut de TLS** : le
+callback échoue **silencieusement** dans tous les cas de coupure de
+connectivité testés, pas seulement sur un mismatch TLS. Un opérateur
+qui compte sur ce flux pour de l'audit/traçabilité pourrait croire
+disposer d'un historique complet dans Logstash alors qu'il n'a rien
+reçu du tout, sans aucun signal l'alertant du problème — un vrai
+risque opérationnel, indépendant du manque de chiffrement en soi.
+
 ## Lien avec les notes existantes
 
 `26-multiline-implementation-ansible-v.md` et
 `tp-parsing-ansible-verbose-resultat.md` (l'approche manuelle
 comparée), `28-codec-filtre-json-approfondi.md` (JSON-dans-JSON,
 `ansible_result` à parser plus tard si besoin), `01-panorama-alternatives-interfacage-securite.md`
-(port API 9600 — même famille de vigilance sur un port TCP exposé).
+(port API 9600 — même famille de vigilance sur un port TCP exposé),
+`tp-filebeat-rh8103-resultat-phase2.md` (mTLS effectivement mis en
+place là où le client le permettait — contraste direct avec la
+limite du callback ici).
