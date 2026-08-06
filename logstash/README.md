@@ -96,7 +96,7 @@ compréhension tient mieux dans la durée.
 - [x] Filtre/codec `multiline` 
 
 - [x] TP: Connecter RH8103 comme client Filebeat vers Logstash (Rocky9)
-- [ ] TP: callback plugin `community.general.logstash` — playbook en direct vers Logstash.
+- [x] TP: callback plugin `community.general.logstash` — playbook en direct vers Logstash.
 - [ ] TP: Recoller une stack trace Java multiligne
 
 ## Palier 4 — Sorties multiples, gestion d'erreurs
