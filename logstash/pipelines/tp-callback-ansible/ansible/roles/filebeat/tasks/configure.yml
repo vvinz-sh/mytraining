@@ -1,0 +1,132 @@
+---
+- name: Créer le user système dédié filebeat
+  ansible.builtin.user:
+    name: filebeat
+    system: true
+    shell: /sbin/nologin
+    create_home: false
+    state: present
+
+- name: Donner la propriété des dossiers de données/logs à filebeat
+  ansible.builtin.file:
+    path: "{{ item }}"
+    owner: filebeat
+    group: filebeat
+    recurse: true
+  loop:
+    - /var/lib/filebeat
+    - /var/log/filebeat
+
+- name: Créer le dossier des certificats
+  ansible.builtin.file:
+    path: /etc/filebeat/certs
+    state: directory
+    owner: filebeat
+    group: filebeat
+    mode: "0750"
+
+- name: Déposer le certificat de la CA
+  ansible.builtin.copy:
+    content: "{{ filebeat_ssl_content_ca_crt }}"
+    dest: "{{ filebeat_ssl_ca_crt }}"
+    owner: filebeat
+    group: filebeat
+    mode: "0644"
+  tags: crt_deploy
+  notify: restart filebeat
+  no_log: true
+
+- name: Déposer le certificat client
+  ansible.builtin.copy:
+    content: "{{ filebeat_ssl_content_crt }}"
+    dest: "{{ filebeat_ssl_crt }}"
+    owner: filebeat
+    group: filebeat
+    mode: "0644"
+  tags: crt_deploy
+  notify: restart filebeat
+  no_log: true
+
+- name: Déposer la clé privée client
+  ansible.builtin.copy:
+    content: "{{ filebeat_ssl_content_key }}"
+    dest: "{{ filebeat_ssl_key }}"
+    owner: filebeat
+    group: filebeat
+    mode: "0600"
+  tags: crt_deploy
+  notify: restart filebeat
+  no_log: true
+
+- name: Autoriser filebeat en lecture sur /var/log/ (ACL par défaut, survit à logrotate)
+  ansible.posix.acl:
+    path: /var/log/
+    entity: filebeat
+    etype: user
+    permissions: r
+    default: true
+    state: present
+
+- name: "Autoriser filebeat en lecture sur {{ filebeat_logs_path }} (fichier déjà existant)"
+  ansible.posix.acl:
+    path: "{{ filebeat_logs_path }}"
+    entity: filebeat
+    etype: user
+    permissions: r
+    state: present
+
+- name: Créer le dossier de surcharge systemd pour filebeat
+  ansible.builtin.file:
+    path: /etc/systemd/system/filebeat.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Déployer l'override systemd (user dédié)
+  ansible.builtin.template:
+    src: filebeat-override.conf.j2
+    dest: /etc/systemd/system/filebeat.service.d/override.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: recharger systemd et redémarrer filebeat
+
+- name: Déployer filebeat.yml
+  ansible.builtin.template:
+    src: filebeat.yml.j2
+    dest: /etc/filebeat/filebeat.yml
+    owner: root
+    group: filebeat
+    mode: "0640"
+  notify: restart filebeat
+
+- name: Vérifier si le keystore filebeat existe déjà
+  ansible.builtin.stat:
+    path: /var/lib/filebeat/filebeat.keystore
+  register: filebeat_keystore_stat
+
+- name: Créer le keystore filebeat
+  ansible.builtin.command: filebeat keystore create
+  become_user: filebeat
+  vars:
+    ansible_remote_tmp: /var/lib/filebeat/.ansible-tmp
+  when: not filebeat_keystore_stat.stat.exists
+
+- name: Lister le contenu du keystore filebeat
+  ansible.builtin.command: filebeat keystore list
+  become_user: filebeat
+  vars:
+    ansible_remote_tmp: /var/lib/filebeat/.ansible-tmp
+  register: filebeat_keystore_list
+  changed_when: false
+
+- name: Ajouter la passphrase de la clé au keystore
+  ansible.builtin.shell: |
+    echo "{{ filebeat_ssl_key_passphrase_ks_value }}" | filebeat keystore add SSL_KEY_PASSPHRASE --stdin --force
+  become_user: filebeat
+  vars:
+    ansible_remote_tmp: /var/lib/filebeat/.ansible-tmp
+  when: "'SSL_KEY_PASSPHRASE' not in filebeat_keystore_list.stdout"
+  no_log: true
+

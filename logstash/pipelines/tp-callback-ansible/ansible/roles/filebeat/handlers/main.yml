@@ -1,0 +1,11 @@
+---
+- name: restart filebeat
+  ansible.builtin.systemd:
+    name: filebeat
+    state: restarted
+
+- name: recharger systemd et redémarrer filebeat
+  ansible.builtin.systemd:
+    name: filebeat
+    daemon_reload: true
+    state: restarted

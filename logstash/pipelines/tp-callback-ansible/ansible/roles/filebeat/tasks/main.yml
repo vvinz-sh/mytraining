@@ -1,0 +1,6 @@
+---
+- name: Installer Filebeat
+  ansible.builtin.import_tasks: install.yml
+
+- name: Configurer Filebeat
+  ansible.builtin.import_tasks: configure.yml
