@@ -2,117 +2,145 @@
 
 Statut : **design posé, pas encore exécuté**. Dernier TP du Palier 4.
 Met en pratique la théorie déjà posée au Palier 1 (note 09,
-`queue.type: memory` vs `persisted`) — jamais testé concrètement
-jusqu'ici, uniquement raisonné sur le papier.
+`queue.type: memory` vs `persisted`).
 
 ## Contexte
 
-Note 09 avait établi, sans le tester : `queue.type: memory` (défaut)
-perd tout ce qui n'a pas atteint `output` en cas de crash — "poof",
-sans trace. `queue.type: persisted` comble ce trou via un accusé de
-réception ("acked"), un event n'étant retiré de la queue qu'une fois
-confirmé jusqu'au bout. Ce TP construit un scénario de crash
-reproductible pour observer, sur les deux configurations, ce qui
-survit réellement — pas seulement ce que la doc affirme.
+`queue.type: memory` (défaut) perd tout ce qui n'a pas atteint
+`output` en cas de crash. `queue.type: persisted` comble ce trou via
+un accusé de réception ("acked"), un event n'étant retiré de la queue
+qu'une fois confirmé jusqu'au bout. Objectif : provoquer une vraie
+accumulation mesurable dans la queue avant de tuer le process, sur
+les deux configurations, pour comparer perte réelle vs récupération
+réelle — pas juste la théorie.
 
-## Étape 1 — Construire un scénario où le crash a une fenêtre d'impact prévisible
+Source : flux TCP généré par un script dédié, débit contrôlé,
+supérieur à ce que Logstash peut absorber une fois bridé en CPU. Un
+flux TCP transitoire (pas de fichier, pas de sincedb) élimine tout
+risque de rejeu depuis une source qui garderait sa propre mémoire de
+progression — seule la queue elle-même peut expliquer ce qui est
+récupéré après un crash.
 
-Deux leviers retenus, sans `sleep` artificiel :
-- **Fichier source volumineux déjà disponible** : `dataset_entrainement`
-  (module `ia-concepts`, >3 Mo) — élargit naturellement la fenêtre de
-  traitement, sans fabriquer un cas de test artificiel
-- **Réduction du nombre de vCPU** alloués à la VM — ralentit le débit
-  réel de traitement, comportement plus honnête qu'un délai artificiel
-  injecté dans la config elle-même
+## Étape 1 — Script générateur d'events
 
-Objectif : pouvoir tuer le process (`kill -9`, pas un arrêt propre)
-**pendant** que des events sont encore "en vol" — lus en entrée, pas
-encore confirmés en sortie.
+```bash
+#!/bin/bash
+# Usage : ./send-events.sh <host> <port> <count> <rate_par_seconde>
+HOST="$1"
+PORT="$2"
+COUNT="$3"
+RATE="$4"
+DELAY=$(echo "scale=6; 1/$RATE" | bc)
 
-## Étape 2 — Baseline avec `queue.type: memory` (comportement attendu : perte)
+exec 3<>"/dev/tcp/$HOST/$PORT"
+for i in $(seq 1 "$COUNT"); do
+    echo "EVT-${i}-$(date +%s%N)" >&3
+    sleep "$DELAY"
+done
+exec 3<&-
+exec 3>&-
+echo "=== Envoyé : $COUNT events vers $HOST:$PORT (débit visé : $RATE/s) ==="
+```
+Connexion TCP persistante (pas de reconnexion par ligne), chaque
+event numéroté séquentiellement + timestamp nanoseconde — comptage
+final trivial, identifiable individuellement si besoin.
 
-1. Lancer le pipeline sur un jeu de N lignes connu (compter précisément)
-2. `kill -9` le process à un moment délibérément choisi en cours de
-   traitement
-3. Relancer le pipeline, laisser terminer
-4. Compter les events réellement arrivés en sortie — comparer à N
-
-Attendu (à confirmer, pas à supposer) : moins de N events arrivés,
-perte silencieuse des events qui étaient "en vol" au moment du kill.
-
-## Étape 2bis — Observer la queue via l'API pendant le traitement
+## Étape 2 — Pipeline Logstash
 
 ```
-GET /_node/stats/pipelines
-```
-Champ à surveiller, distinct de celui du DLQ (note 30) :
-```json
-"queue": {
-  "type": "persisted",
-  "events": 42,
-  "capacity": { "queue_size_in_bytes": ..., "max_queue_size_in_bytes": ... },
-  "data": { "path": "/chemin/vers/queue/main" }
+input {
+  tcp {
+    port => 6000
+  }
+}
+output {
+  file {
+    path => "/tmp/tp-pq-crash-out.log"
+  }
 }
 ```
-`queue.events` (nombre d'events actuellement dans la queue) et
-`queue.capacity.queue_size_in_bytes` (taille réelle sur disque) — à
-observer croître pendant le traitement du fichier volumineux, avant
-même de déclencher le crash. Point de vigilance repéré dans un ticket
-Elastic (#13832) : ces stats peuvent se figer pendant un drain propre
-(`queue.drain: true` sur `SIGTERM`) — sans impact ici puisque le kill
-utilisé est un `kill -9`, pas un arrêt propre, mais à garder en tête
-si un jour la comparaison inclut aussi un arrêt propre.
+Codec `line` par défaut sur `tcp` — chaque ligne devient directement
+`message`, pas besoin de JSON pour ce test.
 
-## Étape 3 — Même scénario avec `queue.type: persisted`
+## Étape 3 — Calibrer le débit et le throttling CPU
 
-Répéter exactement la même procédure (même N, même point de kill si
-possible pour une comparaison honnête), avec `queue.type: persisted`
-activé cette fois. Attendu : N events arrivés en sortie au final,
-sans perte — à vérifier par comptage, pas par confiance dans la doc.
+Limitation CPU appliquée **à chaud** sur le process déjà lancé (pas
+via override systemd au démarrage, pour ne pas ralentir
+anormalement le boot de la JVM elle-même) :
+```bash
+systemctl set-property --runtime logstash.service CPUQuota=20%
+```
+`--runtime` = changement transitoire, non persisté.
 
-## Étape 4 — Vérifier le mécanisme exact de la récupération
+`RATE` du générateur doit dépasser clairement ce que Logstash peut
+absorber une fois bridé — à calibrer en pratique : lancer un premier
+petit test à un débit arbitraire et observer si `queue.events_count`
+bouge réellement. Si non, monter le débit ou resserrer encore le
+quota CPU.
 
-Point resté flou dans la note 09, à trancher ici par l'observation :
-la récupération après crash avec `persisted` vient-elle (a) du fait
-que les events "en vol" restent physiquement stockés sur disque dans
-la queue persistée elle-même (indépendamment du `sincedb` du plugin
-`file`), ou (b) du fait que le `sincedb` n'avance sa position de
-lecture qu'une fois l'event acquitté, donc le fichier source est
-simplement **relu** depuis ce point après redémarrage ? Les deux
-mécanismes aboutissent au même résultat visible (pas de perte), mais
-ne sont pas la même chose — à distinguer en inspectant le contenu du
-répertoire `queue.type: persisted` (`path.queue`) et l'état du
-`sincedb` juste après le crash, avant le redémarrage.
+## Étape 4 — Métriques à surveiller
+
+```bash
+curl -s localhost:9600/_node/stats/pipelines | jq '.pipelines."tp-pq-crash" | {queue, input_tp: .flow.input_throughput.current, output_tp: .flow.output_throughput.current, backpressure: .flow.queue_backpressure.current, events_in: .events.in}'
+```
+- `queue.events_count` — mesure centrale, ce qu'on cherche à voir
+  monter
+- `queue.queue_size_in_bytes` — même chose côté taille disque/mémoire
+- `flow.input_throughput.current` vs `flow.output_throughput.current`
+  — signal causal : si l'entrée dépasse durablement la sortie, c'est
+  mécaniquement ce qui remplit la queue
+- `flow.queue_backpressure.current` — jamais exploitée jusqu'ici,
+  mesure directement la pression d'une queue qui sature
+- `events.in` — total cumulé, à comparer à `COUNT` envoyé une fois
+  terminé
+
+## Étape 5 — Cas `queue.type: memory`
+
+1. Lancer le pipeline, appliquer le `CPUQuota`
+2. Lancer le générateur avec `COUNT`/`RATE` calibrés
+3. Surveiller les métriques ci-dessus, relever précisément
+   `queue.events_count` **juste avant** le kill (pas après coup)
+4. `kill -9` le process
+5. Relancer, laisser terminer, compter `/tmp/tp-pq-crash-out.log`
+
+Objectif : perte mesurable, et surtout **cohérente** avec le
+`events_count` relevé juste avant le crash — pas juste "il manque des
+events", mais un écart qui colle à la valeur observée. Confirmer
+aussi qu'aucun crash du pipeline lui-même, juste une perte silencieuse.
+
+## Étape 6 — Cas `queue.type: persisted`
+
+Même procédure, `queue.type: persisted` cette fois. Objectif
+principal : zéro perte, comparé à `COUNT` envoyé. Objectif secondaire,
+rendu possible par le choix de source TCP transitoire : tout event
+récupéré après le crash ne peut venir **que** du disque de la queue
+persistée elle-même — preuve propre du mécanisme, sans ambiguïté
+possible avec une source qui rejouerait depuis sa propre mémoire.
+Noter aussi le coût observé (latence de reprise, taille sur disque de
+la queue au moment du crash).
 
 ## Ce qu'il faudra vérifier/clarifier en exécutant
 
-- Mécanisme de ralentissement retenu pour élargir la fenêtre de crash
-  (à choisir en pratique, pas deviné à l'avance)
-- Nombre exact d'events perdus en `memory` (comparé à N) — pour avoir
-  un vrai chiffre, pas juste "il y a une perte"
-- Confirmation qu'aucun event n'est perdu en `persisted`, par comptage
-- Mécanisme réel de la récupération (queue sur disque vs `sincedb`
-  retardé) — à trancher en observant, pas en supposant depuis la note 09
-- Coût réel observé (latence, taille disque) de `persisted` par
-  rapport à `memory` sur ce volume de test
-- Confirmer que `queue.events`/`queue.capacity.queue_size_in_bytes`
-  (persisted queue) et `dead_letter_queue.queue_size_in_bytes` (note
-  30) sont bien deux métriques distinctes de l'API, pas la même chose
-  sous deux noms
+- `RATE`/`COUNT` et `CPUQuota` réellement calibrés pour créer une
+  accumulation visible — à ajuster en pratique, pas deviné à l'avance
+- Écart de perte (cas `memory`) cohérent avec `events_count` relevé
+  juste avant le kill
+- Coût réel (latence, taille disque) de `persisted` par rapport à
+  `memory` sur ce test
 
 ## Compétences pratiquées
 
-- Construction d'un scénario de crash reproductible et mesurable
-  (comptage avant/après, pas une impression qualitative)
-- Vérification empirique d'un mécanisme jusqu'ici seulement raisonné
-  sur le papier (note 09)
-- Distinction entre deux mécanismes plausibles produisant le même
-  résultat observable en surface
+- Construction d'un scénario de charge/crash reproductible et
+  mesurable, avec une source qui élimine toute ambiguïté sur l'origine
+  des events récupérés
+- Limitation de ressources à chaud sur un service déjà lancé
+  (`systemctl set-property --runtime`)
+- Lecture de métriques de flux (`input_throughput`/`output_throughput`/
+  `queue_backpressure`) jamais exploitées jusqu'ici
 
 ## Lien avec les notes existantes
 
-`09-configuration-logstash-java.md` (`queue.type`, `sincedb` — théorie
-posée, jamais testée jusqu'ici), `16-panorama-beats.md` (triptyque de
-fiabilité — contre-pression, persisted queue, DLQ, chacun pour un
-scénario différent), `30-dead-letter-queue-native.md` (DLQ, mécanisme
-complémentaire mais disjoint de la persisted queue).
+`09-configuration-logstash-java.md` (`queue.type` — théorie posée,
+testée ici), `16-panorama-beats.md` (triptyque de fiabilité —
+contre-pression, persisted queue, DLQ), `30-dead-letter-queue-native.md`
+(DLQ, mécanisme complémentaire mais disjoint de la persisted queue).
