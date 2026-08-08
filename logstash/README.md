@@ -106,7 +106,7 @@ compréhension tient mieux dans la durée.
 
 - [x] TP: `/_node/logging` — monter le niveau de log à chaud (PUT) pour diagnostic hausse d'échecs (DLQ qui grossit) sans redémarrer le pipeline
 - [x] TP: router les échecs de tâches Ansible (via le callback plugin logstash) vers une sortie séparée.
-- [ ] TP: Persistent queue — simuler un crash en cours de traitement, vérifier la reprise
+- [x] TP: Persistent queue — simuler un crash en cours de traitement, vérifier la reprise
 
 ## Palier 5 — Sortie Elasticsearch/Kibana
 
