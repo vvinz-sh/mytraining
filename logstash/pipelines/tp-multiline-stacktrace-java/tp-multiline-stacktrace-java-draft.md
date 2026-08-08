@@ -16,29 +16,31 @@ lignes `at ...`, `Caused by:` imbriqués, `... N more`) doit devenir
   CertificateExpiredException]`)
 - la trace complète toujours accessible (champ `message` conservé
   tel quel, pas perdu au profit de l'extraction)
-- aucune fragmentation : vérifier sur le `.log` brut regénéré que le
-  nombre d'événements en sortie correspond bien au nombre de stacks
-  réelles, pas plus (sinon le pattern de continuation a raté une
-  ligne quelque part)
+- aucune fragmentation : vérifier sur le `.log` brut que le nombre
+  d'événements en sortie correspond bien au nombre de stacks réelles
+  (122), pas plus (sinon le pattern de continuation a raté une ligne
+  quelque part)
 
 Critère de réussite concret : dans Kibana, pouvoir filtrer/agréger
 sur `exception.chain` (ex. compter combien de fois
 `CertificateExpiredException` apparaît) sans avoir à faire une
 recherche texte libre sur `message`.
 
-## Matériel à régénérer
+## Matériel
 
-Vérification faite : les notes du TP `tp-filebeat-rh8103` (résultat
-phase 4) ne contiennent que des lignes uniques extraites à l'époque
-(`Caused by: java.security.cert.CertificateExpiredException: ...`,
-`io.netty.handler.codec.DecoderException: ...`), pas une vraie stack
-multiligne avec frames `at ...`. Les `.log` bruts d'origine ne sont
-plus disponibles (jamais committés, propres à la VM).
+Prêt : `expiredcert_rocky_logstash-plain.log` (à côté de ce draft),
+capturé depuis `/var/log/logstash/logstash-plain.log` sur `rocky`
+(et non via `journalctl`, qui réinjecte un en-tête syslog sur
+chaque ligne et casse l'indentation d'origine — piège identifié
+lors d'une première tentative).
 
-Décision : **regénérer la simulation d'erreur SSL expiré** (même
-scénario que le point 1 de l'Étape 6 du TP `tp-filebeat-rh8103` —
-cert client ou serveur expiré) pour capturer une vraie stack Java
-complète côté Logstash, cette fois en conservant le `.log` brut.
+Contenu réel : **122 tentatives** de handshake TLS rejetées (retry
+Filebeat en boucle), chaîne à 5 niveaux
+`DecoderException` → `SSLHandshakeException` → `ValidatorException`
+→ `CertPathValidatorException` → `CertificateExpiredException`,
+indentation en tabulation (`\t`) sur les lignes `at ...`. 122
+événements attendus en sortie du pipeline si le pattern ne fragmente
+rien.
 
 ## Décisions prises
 
@@ -72,16 +74,16 @@ recherche texte seule sur `message`.
 ## Design du TP — récapitulatif
 
 Toutes les décisions de conception sont prises :
-- Matériel : à régénérer via nouvelle simulation SSL expiré (cert
-  client ou serveur), `.log` brut conservé cette fois
+- Matériel : disponible (`expiredcert_rocky_logstash-plain.log`,
+  122 tentatives, chaîne à 5 niveaux)
 - Déclenchement : `codec multiline`, `negate: false` sur pattern de
   continuation (`^\s+at\b|^Caused by:|^\.\.\. \d+ more`)
 - Pas de comparaison avec le filtre déprécié (source unique, bug non
   démontrable)
 - Grok en sortie pour extraire `exception.chain` en champ structuré
 
-Reste à faire : régénérer le matériel sur le lab, puis écrire le
-draft d'exécution détaillé (étapes) une fois le `.log` brut en main.
+Reste à faire : écrire le draft d'exécution détaillé (étapes du
+pipeline, config `input`/`filter`/`output`).
 
 ## Lien avec les notes existantes
 
